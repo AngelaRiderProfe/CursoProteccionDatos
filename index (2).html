@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protección de datos: aula y empresa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Plan: barra lateral fija con los módulos + columna de lectura de ~68ch; cajas de "ejemplo", "caso" y "ojo" con franja lateral; semáforo verde/ámbar/rojo para decisiones */
+  --bg:#f3f5f7;
+  --surface:#ffffff;
+  --ink:#16212c;
+  --muted:#55636f;
+  --line:#d9e0e6;
+  --accent:#0d5f7c;
+  --accent-soft:#e2eff4;
+  --ok:#1f7a45; --ok-soft:#e3f3e9;
+  --warn:#9a6200; --warn-soft:#fbf0d9;
+  --bad:#b3261e; --bad-soft:#fbe5e3;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161c; --surface:#18212a; --ink:#e6ecf1; --muted:#9fb0bd; --line:#2b3843;
+    --accent:#5fb6d6; --accent-soft:#16313d;
+    --ok:#62c48a; --ok-soft:#163223; --warn:#e3b04f; --warn-soft:#352914; --bad:#f08178; --bad-soft:#3a1c1a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161c; --surface:#18212a; --ink:#e6ecf1; --muted:#9fb0bd; --line:#2b3843;
+  --accent:#5fb6d6; --accent-soft:#16313d;
+  --ok:#62c48a; --ok-soft:#163223; --warn:#e3b04f; --warn-soft:#352914; --bad:#f08178; --bad-soft:#3a1c1a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.9rem,4vw,2.7rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.55rem;font-weight:700;margin-top:2.2rem}
+h3{font-size:1.18rem;font-weight:700;margin-top:1.6rem}
+p,li{max-width:68ch}
+.layout{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+nav.side{position:sticky;top:0;height:100vh;overflow:auto;background:var(--surface);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:18px}
+.brand{font-family:var(--font-display);font-weight:800;font-size:1.1rem;line-height:1.2}
+.brand small{display:block;font-family:var(--font-body);font-weight:400;color:var(--muted);font-size:.82rem;margin-top:4px}
+.progress{display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--muted)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.navlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.navlist a{display:grid;grid-template-columns:28px 1fr 18px;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-size:.93rem;line-height:1.3}
+.navlist a:hover{background:var(--accent-soft)}
+.navlist a.active{background:var(--accent);color:var(--surface)}
+.navlist .num{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+.navlist a.active .num{color:var(--surface)}
+.navlist .tick{font-size:.9rem;color:var(--ok)}
+.navlist a.active .tick{color:var(--surface)}
+.menu-btn{display:none}
+main{padding:40px clamp(16px,5vw,64px) 80px;min-width:0}
+.module{display:none;max-width:860px}
+.module.show{display:block}
+.eyebrow{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:700;margin-bottom:8px}
+.lead{font-size:1.12rem;color:var(--muted);margin-top:12px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{display:inline-block;font-size:.8rem;padding:3px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+.box{border-left:5px solid var(--accent);background:var(--surface);border-radius:0 10px 10px 0;padding:14px 18px;margin:18px 0;box-shadow:0 1px 0 var(--line)}
+.box > :first-child{margin-top:0}
+.box > :last-child{margin-bottom:0}
+.box .tag{font-family:var(--font-display);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 4px}
+.box.ej{border-color:var(--ok)} .box.ej .tag{color:var(--ok)}
+.box.caso{border-color:var(--warn)} .box.caso .tag{color:var(--warn)}
+.box.ojo{border-color:var(--bad);background:var(--bad-soft)} .box.ojo .tag{color:var(--bad)}
+.box.ley{border-color:var(--muted)} .box.ley .tag{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:16px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h4{font-size:1.02rem;margin-bottom:4px}
+.card p{margin:.3rem 0;font-size:.95rem}
+.card .art{font-size:.78rem;color:var(--muted)}
+.tablewrap{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;background:var(--surface);border-radius:10px;overflow:hidden;font-size:.95rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--font-display);background:var(--accent-soft);color:var(--ink)}
+.yes{color:var(--ok);font-weight:700}.no{color:var(--bad);font-weight:700}.maybe{color:var(--warn);font-weight:700}
+.modcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:18px}
+.modcards a{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--ink)}
+.modcards a:hover{border-color:var(--accent)}
+.modcards .n{font-family:var(--font-display);font-weight:800;color:var(--accent);font-size:1.3rem}
+.modcards .t{font-weight:700;line-height:1.3}
+.modcards .d{font-size:.88rem;color:var(--muted)}
+.modcards .st{font-size:.8rem;font-weight:700;color:var(--ok);min-height:1.2em}
+ol.steps{counter-reset:s;list-style:none;padding:0;display:flex;flex-direction:column;gap:10px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}
+ol.steps li::before{content:counter(s);font-family:var(--font-display);font-weight:800;background:var(--accent);color:var(--surface);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:.95rem}
+/* Actividades de decidir */
+.decide{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin:20px 0}
+.decide h3{margin-top:0}
+.decide .hint{font-size:.9rem;color:var(--muted);margin:.3rem 0 12px}
+.ditem{border-top:1px solid var(--line);padding:12px 0;display:flex;flex-direction:column;gap:8px}
+.ditem .q{font-weight:700}
+.dopts{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;cursor:pointer}
+.opt{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:5px 14px;font-size:.92rem;font-weight:700}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default;opacity:.55}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);opacity:1}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad);opacity:1}
+.fb{font-size:.93rem;border-radius:8px;padding:8px 12px;display:none}
+.fb.show{display:block}
+.fb.good{background:var(--ok-soft)} .fb.badf{background:var(--bad-soft)}
+.dscore{font-weight:700;margin-top:10px;color:var(--accent)}
+/* Test */
+.quiz{background:var(--surface);border:2px solid var(--accent);border-radius:14px;padding:20px;margin:32px 0}
+.quiz > h2{margin-top:0}
+.qq{border-top:1px solid var(--line);padding:16px 0}
+.qq .qt{font-weight:700;margin:0 0 10px}
+.qq .qn{font-family:var(--font-display);color:var(--accent);margin-right:6px}
+.qopts{display:flex;flex-direction:column;gap:8px}
+.qopt{text-align:left;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:.96rem;line-height:1.4}
+.qopt:hover:not(:disabled){border-color:var(--accent)}
+.qopt:disabled{cursor:default}
+.qopt.right{border-color:var(--ok);background:var(--ok-soft)}
+.qopt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.qresult{display:none;margin-top:14px;padding:14px 16px;border-radius:10px;background:var(--accent-soft);font-weight:700}
+.qresult.show{display:block}
+.btn{border:0;background:var(--accent);color:var(--surface);border-radius:10px;padding:10px 18px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:36px;flex-wrap:wrap}
+.pager a{text-decoration:none;font-weight:700;border:2px solid var(--line);padding:10px 16px;border-radius:10px;background:var(--surface)}
+.pager a:hover{border-color:var(--accent)}
+input[type=text]{font:inherit;padding:9px 12px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);min-width:260px}
+.cert{display:none;border:3px double var(--accent);border-radius:14px;background:var(--surface);padding:26px;margin-top:22px;text-align:center}
+.cert.show{display:block}
+.cert h3{font-size:1.5rem;margin:6px 0}
+.cert .big{font-family:var(--font-display);font-size:2.4rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+pre.compromiso{white-space:pre-wrap;font-family:var(--font-body);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;font-size:.95rem;max-width:72ch}
+.toast{font-size:.9rem;color:var(--ok);font-weight:700}
+.sources li{font-size:.92rem}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .menu-btn{display:inline-block;align-self:flex-start}
+  nav.side.closed .navlist{display:none}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="side closed" id="side" aria-label="Módulos del curso">
+  <div class="brand">Protección de datos<small>En el aula y en las prácticas en empresa · Alumnado de DAM</small></div>
+  <div class="progress"><span id="progtxt">0 de 7 tests superados</span><div class="bar"><span id="progbar"></span></div></div>
+  <button class="btn ghost menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navlist">Ver módulos</button>
+  <ul class="navlist" id="navlist"></ul>
+</nav>
+
+<main id="main">
+
+<!-- ================= INICIO ================= -->
+<section class="module" id="inicio" data-title="Antes de empezar">
+  <div class="eyebrow">Antes de empezar</div>
+  <h1>Lo que grabas, compartes o copias también es asunto tuyo</h1>
+  <p class="lead">Curso para el alumnado de Desarrollo de Aplicaciones Multiplataforma (DAM). Explica qué puedes hacer y qué no con los datos de otras personas: en clase, con el móvil o las gafas inteligentes, en las redes, en tus proyectos y, sobre todo, durante tu formación en la empresa.</p>
+  <div class="meta"><span class="chip">8 módulos</span><span class="chip">7 tests + examen final</span><span class="chip">≈ 4 horas</span></div>
+
+  <div class="box ley">
+    <p class="tag">Por qué existe este curso</p>
+    <p>La mayoría de los problemas de protección de datos no los provoca la mala intención, sino el desconocimiento: una grabación «de broma», un vídeo reenviado, un documento subido a un repositorio personal. Este curso existe para que eso no te pase.</p>
+    <p>Recuerda que <strong>la ignorancia de las leyes no excusa de su cumplimiento</strong> (art. 6.1 del Código Civil). No saber que algo estaba prohibido no te libra de sus consecuencias. Además, todos vosotros sois mayores de edad: respondéis personalmente de lo que hagáis, en el centro, ante la Agencia de Protección de Datos y ante un juzgado.</p>
+  </div>
+
+  <div class="box ojo">
+    <p class="tag">Tú eres adulto; muchos de tus compañeros de centro, no</p>
+    <p>En el centro conviven ciclos con alumnado de ESO o Bachillerato menor de edad. Grabar, fotografiar o difundir la imagen de un menor es todavía más grave, y la Fiscalía puede actuar sin que nadie lo denuncie. Lo verás en el módulo 5.</p>
+  </div>
+
+  <h2>Y en el tercer trimestre, la empresa</h2>
+  <p>Durante la formación en empresa vas a trabajar con bases de datos de clientes, código fuente, repositorios, credenciales, entornos de producción y documentación interna. Nada de eso es tuyo. La empresa confía en que lo trates con la misma discreción que un trabajador de plantilla, y la ley te obliga a ello incluso cuando terminen las prácticas. Y como desarrollador, además, serás quien construya las aplicaciones que tratan los datos de otros.</p>
+
+  <h2>Cómo funciona el curso</h2>
+  <ul>
+    <li>Cada módulo tiene explicación, <strong>ejemplos</strong> del aula y de la empresa, <strong>casos</strong> resueltos y una actividad para decidir.</li>
+    <li>Al final de cada módulo hay un <strong>test</strong>. Se supera con un 70 % y puedes repetirlo las veces que quieras.</li>
+    <li>El <strong>módulo 8</strong> tiene el examen final (15 preguntas, se aprueba con 12) y el compromiso de confidencialidad para las prácticas.</li>
+    <li>Tu progreso se guarda solo en este navegador. Si cambias de dispositivo, empezarás de cero.</li>
+  </ul>
+
+  <div class="modcards" id="modcards"></div>
+</section>
+
+<!-- ================= M1 ================= -->
+<section class="module" id="m1" data-title="Qué es un dato personal" data-n="1">
+  <div class="eyebrow">Módulo 1 · Normativa y conceptos básicos</div>
+  <h1>Qué es un dato personal (y por qué tu cara lo es)</h1>
+  <p class="lead">Antes de hablar de lo que se puede o no se puede hacer, necesitamos un vocabulario común. Aquí verás las leyes que se aplican y las seis palabras que salen en todo el curso.</p>
+
+  <h2>Las normas que se aplican</h2>
+  <p>No hace falta que te las aprendas de memoria, pero sí que sepas que existen y qué protege cada una.</p>
+  <div class="grid2">
+    <div class="card"><h4>RGPD</h4><p>Reglamento (UE) 2016/679. Es la norma europea básica: se aplica igual en toda la Unión Europea a empresas, centros educativos y particulares.</p><p class="art">Reglamento General de Protección de Datos</p></div>
+    <div class="card"><h4>LOPDGDD</h4><p>Ley Orgánica 3/2018. Adapta el RGPD a España y añade derechos digitales, como la edad de 14 años para consentir o el deber de confidencialidad.</p><p class="art">Protección de Datos y garantía de los derechos digitales</p></div>
+    <div class="card"><h4>Ley Orgánica 1/1982</h4><p>Protege el derecho al honor, a la intimidad y a la propia imagen. Es la que permite reclamar una indemnización a quien usa tu imagen sin permiso.</p><p class="art">Vía civil</p></div>
+    <div class="card"><h4>Ley Orgánica de Educación</h4><p>Su disposición adicional 23.ª permite a los centros recoger los datos del alumnado necesarios para la función educativa, y solo para eso.</p><p class="art">LO 2/2006, DA 23.ª</p></div>
+    <div class="card"><h4>Reglamento de IA</h4><p>Reglamento (UE) 2024/1689 (AI Act). Regula los sistemas de inteligencia artificial; considera de alto riesgo los que evalúan al alumnado.</p><p class="art">Aplicación escalonada desde 2025</p></div>
+    <div class="card"><h4>Código Penal</h4><p>Los casos más graves, como difundir imágenes íntimas sin permiso o revelar secretos ajenos, pueden ser delito (artículos 197 y siguientes).</p><p class="art">Vía penal</p></div>
+  </div>
+  <p>Además hay guías prácticas: la <a href="https://www.aepd.es/guias/guia-centros-educativos.pdf">Guía para centros educativos de la AEPD</a> y la guía del Consejo de Transparencia y Protección de Datos de Andalucía (CTPDA) para centros andaluces.</p>
+
+  <h2>Seis conceptos clave</h2>
+
+  <h3>1. Dato personal</h3>
+  <p>Es <strong>cualquier información sobre una persona identificada o identificable</strong> (art. 4.1 RGPD). «Identificable» significa que se puede saber quién es, aunque no aparezca su nombre: basta con su cara, su voz, su matrícula, su número de expediente o una combinación de pistas.</p>
+  <div class="box ej">
+    <p class="tag">Ejemplos</p>
+    <ul>
+      <li>Tu nombre, tu DNI, tu foto, tu voz en un audio de WhatsApp.</li>
+      <li>La nota de un examen junto a tu número de lista.</li>
+      <li>Un vídeo en el que no se te ve la cara, pero todo el mundo te reconoce por la sudadera y por el sitio donde te sientas.</li>
+      <li>La dirección IP de tu portátil o la ubicación de tu móvil.</li>
+    </ul>
+  </div>
+  <div class="box ojo">
+    <p class="tag">Ojo</p>
+    <p>Que alguien sea profesor, funcionario o trabajador público <strong>no</strong> hace que su imagen deje de ser un dato personal. Un profesor en clase está trabajando, no posando para tu galería.</p>
+  </div>
+
+  <h3>2. Datos de categoría especial</h3>
+  <p>Son los datos más delicados y tienen protección reforzada (art. 9.1 RGPD): salud, origen étnico o racial, opiniones políticas, religión o creencias, afiliación sindical, datos genéticos y biométricos (como la huella o el reconocimiento facial) y vida u orientación sexual.</p>
+  <div class="box ej">
+    <p class="tag">En el aula y en la empresa</p>
+    <p>La alergia de un compañero que conoce el profesorado, el informe médico de un paciente en una clínica, la baja por enfermedad de un trabajador o la religión de una familia que pide menú especial en un comedor. Si los ves durante las prácticas, son lo más protegido de todo.</p>
+  </div>
+
+  <h3>3. Tratamiento</h3>
+  <p>Es <strong>cualquier cosa que se haga con datos personales</strong>: recogerlos, grabarlos, guardarlos, consultarlos, modificarlos, enviarlos, publicarlos, cruzarlos o borrarlos (art. 4.2 RGPD).</p>
+  <div class="box ej">
+    <p class="tag">Ejemplo</p>
+    <p>Grabar a un profesor es un tratamiento. Guardar el vídeo en el móvil, otro. Enviarlo al grupo de clase, otro más. Y cada compañero que lo reenvía hace su propio tratamiento.</p>
+  </div>
+
+  <h3>4. Responsable del tratamiento</h3>
+  <p>Quien <strong>decide para qué y cómo</strong> se usan los datos (art. 4.7 RGPD). En un instituto, el centro (a través de la dirección). En tus prácticas, la empresa. Y si eres tú quien graba a alguien y lo difunde, el responsable de ese tratamiento eres tú.</p>
+
+  <h3>5. Encargado del tratamiento</h3>
+  <p>Quien trata los datos <strong>por cuenta</strong> del responsable, siguiendo sus instrucciones (art. 4.8 RGPD). Por ejemplo, la empresa que hace las nóminas de otra o la que mantiene sus servidores.</p>
+
+  <h3>6. Destinatario e interesado</h3>
+  <p><strong>Destinatario</strong> es a quien se le comunican los datos. <strong>Interesado</strong> es la persona a la que se refieren: el profesor grabado, el paciente de la clínica, el cliente del banco.</p>
+
+  <div class="box ley">
+    <p class="tag">¿Y tú, en prácticas, qué eres?</p>
+    <p>Durante la formación en empresa no eres responsable ni encargado: eres una <strong>persona autorizada</strong> que trata datos bajo la autoridad de la empresa. Eso significa que solo puedes usarlos siguiendo sus instrucciones y para las tareas que te encarguen (art. 29 RGPD).</p>
+  </div>
+
+  <div class="box ej">
+    <p class="tag">Como desarrollador</p>
+    <p>Si haces prácticas en una empresa que programa una app para una clínica, la clínica es la responsable de los datos de sus pacientes, tu empresa es la encargada y tú eres una persona autorizada de la encargada. Por eso no puedes usar esos datos para nada que no sea el encargo, ni siquiera para hacer pruebas en tu portátil.</p>
+    <p>Además, el RGPD exige <strong>protección de datos desde el diseño y por defecto</strong> (art. 25): las aplicaciones deben recoger solo los datos necesarios, con la configuración más privada activada de serie. Eso lo decide quien programa.</p>
+  </div>
+
+  <div class="decide" data-decide="m1">
+    <h3>Actividad: ¿es un dato personal?</h3>
+    <p class="hint">Decide en cada caso y lee la explicación.</p>
+  </div>
+
+  <div class="quiz" data-quiz="m1"><h2>Test del módulo 1</h2></div>
+  <div class="pager"></div>
+</section>
+
+<!-- ================= M2 ================= -->
+<section class="module" id="m2" data-title="Las reglas del juego" data-n="2">
+  <div class="eyebrow">Módulo 2 · Principios y licitud del tratamiento</div>
+  <h1>Las reglas del juego: principios y permisos</h1>
+  <p class="lead">Todo uso de datos personales tiene que cumplir unos principios y apoyarse en una «base jurídica», es decir, en un motivo que la ley acepta. Si falta cualquiera de las dos cosas, el tratamiento es ilegal.</p>
+
+  <h2>Los principios del artículo 5 del RGPD</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Principio</th><th>Qué significa</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Licitud, lealtad y transparencia</strong><br><span class="art">art. 5.1.a</span></td><td>Hace falta un motivo legal, y la persona debe saber qué se hace con sus datos.</td><td>Grabar a alguien a escondidas incumple la transparencia, aunque luego no lo compartas.</td></tr>
+      <tr><td><strong>Limitación de la finalidad</strong><br><span class="art">art. 5.1.b</span></td><td>Los datos se recogen para algo concreto y no se usan después para otra cosa incompatible.</td><td>El teléfono de un cliente que te dan para confirmar una cita no sirve para escribirle por WhatsApp desde tu móvil.</td></tr>
+      <tr><td><strong>Minimización</strong><br><span class="art">art. 5.1.c</span></td><td>Solo los datos imprescindibles.</td><td>Para un sorteo en clase basta con el nombre de pila; no hace falta el DNI ni la dirección.</td></tr>
+      <tr><td><strong>Exactitud</strong><br><span class="art">art. 5.1.d</span></td><td>Los datos deben ser correctos y estar actualizados.</td><td>Si en la empresa ves que la dirección de un cliente está mal, avisa para que se corrija.</td></tr>
+      <tr><td><strong>Limitación del plazo de conservación</strong><br><span class="art">art. 5.1.e</span></td><td>Se guardan solo el tiempo necesario.</td><td>Las grabaciones de videovigilancia se borran, como máximo, al mes.</td></tr>
+      <tr><td><strong>Integridad y confidencialidad</strong><br><span class="art">art. 5.1.f</span></td><td>Seguridad: que nadie no autorizado los vea, los pierda o los cambie.</td><td>Bloquear la pantalla al levantarte del puesto de trabajo.</td></tr>
+      <tr><td><strong>Responsabilidad proactiva</strong><br><span class="art">art. 5.2</span></td><td>El responsable debe poder demostrar que cumple.</td><td>La empresa te hace firmar un compromiso de confidencialidad y lo guarda.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Las bases jurídicas: ¿con qué derecho se usan los datos?</h2>
+  <p>El artículo 6.1 del RGPD da seis motivos posibles. Basta con uno, pero tiene que existir. Estos son los que más vas a ver:</p>
+  <div class="grid2">
+    <div class="card"><h4>Consentimiento</h4><p>La persona dice que sí, de forma libre, informada, específica e inequívoca.</p><p class="art">art. 6.1.a</p></div>
+    <div class="card"><h4>Contrato</h4><p>Hace falta para cumplir un contrato: la empresa necesita la dirección del cliente para enviarle el pedido.</p><p class="art">art. 6.1.b</p></div>
+    <div class="card"><h4>Obligación legal</h4><p>Una ley lo exige: el centro debe registrar tu evaluación; la empresa, comunicar las nóminas a Hacienda.</p><p class="art">art. 6.1.c</p></div>
+    <div class="card"><h4>Interés vital</h4><p>Proteger la vida de alguien: avisar al 112 de que un compañero es alérgico y está teniendo una reacción.</p><p class="art">art. 6.1.d</p></div>
+    <div class="card"><h4>Interés público</h4><p>La función educativa del centro: las notas, la tutoría o las plataformas educativas no necesitan tu consentimiento.</p><p class="art">art. 6.1.e</p></div>
+    <div class="card"><h4>Interés legítimo</h4><p>Un interés razonable de una empresa que no pisa los derechos de la persona. No vale para las administraciones públicas en sus funciones.</p><p class="art">art. 6.1.f</p></div>
+  </div>
+  <div class="box ojo">
+    <p class="tag">Ojo</p>
+    <p>Un particular que graba a un profesor y lo difunde no tiene ninguna de estas bases. No hay contrato, ni ley, ni interés público, y desde luego no hay consentimiento. Por eso es ilegal.</p>
+  </div>
+
+  <h2>El consentimiento, en detalle</h2>
+  <p>Para que un «sí» valga, tiene que ser:</p>
+  <ul>
+    <li><strong>Libre</strong>: sin presión y sin perder nada por decir que no. Se puede retirar en cualquier momento, y retirarlo debe ser tan fácil como darlo (art. 7.3 RGPD).</li>
+    <li><strong>Específico</strong>: para una finalidad concreta. Aceptar fotos para la orla no es aceptar fotos para Instagram.</li>
+    <li><strong>Informado</strong>: la persona sabe antes para qué se usarán sus datos.</li>
+    <li><strong>Inequívoco</strong>: una acción clara. El silencio, las casillas ya marcadas o «nadie dijo nada» no cuentan.</li>
+  </ul>
+  <h3>¿Quién da el consentimiento?</h3>
+  <ul>
+    <li><strong>Tú</strong>: eres mayor de edad, así que consientes tú y nadie más. Tus padres no pueden consentir por ti ni, en general, recibir tu información sin tu permiso.</li>
+    <li><strong>Un compañero de centro de 14 a 17 años</strong>: consiente él mismo (art. 7 LOPDGDD).</li>
+    <li><strong>Un menor de 14 años</strong>: sus padres, madres o tutores legales. Si están separados, en general deben consentir ambos.</li>
+  </ul>
+  <div class="box ej">
+    <p class="tag">Ejemplo de desarrollo</p>
+    <p>Si en tu proyecto programas una app de registro con casilla de consentimiento, la casilla debe venir <strong>desmarcada</strong>, explicar para qué se usarán los datos y permitir retirar el permiso desde los ajustes. Y si la app puede usarla un menor de 14 años, necesitas un mecanismo para obtener el consentimiento de sus padres.</p>
+  </div>
+
+  <h2>Los datos que maneja tu centro educativo</h2>
+  <p>La disposición adicional 23.ª de la Ley Orgánica de Educación permite al centro recoger los datos necesarios para educarte y orientarte: tu origen y ambiente familiar, tus características personales, tus resultados, etc. Tú y tu familia debéis colaborar. Pero esos datos <strong>solo pueden usarse con fines educativos</strong>; para cualquier otra cosa hace falta consentimiento expreso.</p>
+
+  <div class="decide" data-decide="m2">
+    <h3>Actividad: ¿qué principio se incumple?</h3>
+    <p class="hint">Elige el principio que mejor encaja.</p>
+  </div>
+
+  <div class="quiz" data-quiz="m2"><h2>Test del módulo 2</h2></div>
+  <div class="pager"></div>
+</section>
+
+<!-- ================= M3 ================= -->
+<section class="module" id="m3" data-title="Tus derechos" data-n="3">
+  <div class="eyebrow">Módulo 3 · Deber de información y derechos</div>
+  <h1>Tus derechos y cómo usarlos</h1>
+  <p class="lead">Las mismas reglas que te obligan a respetar los datos de los demás te protegen a ti. Si alguien publica una foto tuya o un centro tiene un dato tuyo mal, puedes actuar.</p>
+
+  <h2>Derecho a saber: el deber de información</h2>
+  <p>Quien recoge tus datos debe decirte, como mínimo (art. 13 y 14 RGPD):</p>
+  <ul>
+    <li>Quién es el responsable y cómo contactar con él y con su Delegado de Protección de Datos (DPD).</li>
+    <li>Para qué se usarán los datos y con qué base jurídica.</li>
+    <li>A quién se comunicarán y si saldrán fuera de la Unión Europea.</li>
+    <li>Cuánto tiempo se guardarán.</li>
+    <li>Qué derechos tienes, que puedes retirar tu consentimiento y que puedes reclamar ante la autoridad de control.</li>
+  </ul>
+  <p>Si los datos no te los pidieron a ti (por ejemplo, los facilitó otra persona), además deben decirte qué tipo de datos tienen y de dónde salen. Tienen que hacerlo en un plazo razonable, como máximo en un mes, o en el primer contacto contigo.</p>
+  <div class="box ej">
+    <p class="tag">Dónde lo has visto</p>
+    <p>En la letra pequeña de la matrícula, en el cartel de «zona videovigilada» de la entrada o en la política de privacidad de una app. Es el «quién, para qué, cuánto tiempo y qué puedes hacer».</p>
+  </div>
+  <div class="box ojo">
+    <p class="tag">Relación con las gafas</p>
+    <p>El LED de unas gafas inteligentes no cumple el deber de información: no dice quién graba, para qué, ni qué se hará con el vídeo. Además, mucha gente no sabe qué significa esa luz.</p>
+  </div>
+
+  <h2>Tus derechos</h2>
+  <div class="grid2">
+    <div class="card"><h4>Acceso</h4><p>Saber si tratan tus datos y pedir una copia. Límite: no puede perjudicar a otras personas.</p><p class="art">art. 15 RGPD</p></div>
+    <div class="card"><h4>Rectificación</h4><p>Que corrijan o completen datos inexactos: tu nombre mal escrito en el listado, un teléfono antiguo.</p><p class="art">art. 16 RGPD</p></div>
+    <div class="card"><h4>Supresión</h4><p>Que borren tus datos cuando ya no hacen falta, cuando retiras el consentimiento o cuando se trataron ilegalmente.</p><p class="art">art. 17 RGPD</p></div>
+    <div class="card"><h4>Limitación</h4><p>Que «congelen» tus datos mientras se resuelve una reclamación.</p><p class="art">art. 18 RGPD</p></div>
+    <div class="card"><h4>Portabilidad</h4><p>Recibir tus datos en un formato que puedas llevar a otro servicio.</p><p class="art">art. 20 RGPD</p></div>
+    <div class="card"><h4>Oposición</h4><p>Oponerte a un tratamiento por tu situación personal, cuando se basa en el interés público o el interés legítimo.</p><p class="art">art. 21 RGPD</p></div>
+    <div class="card"><h4>No a decisiones automáticas</h4><p>Que no te califique ni decida sobre ti solo una máquina, sin intervención humana.</p><p class="art">art. 22 RGPD</p></div>
+  </div>
+
+  <h2>Cómo se ejercen</h2>
+  <ol class="steps">
+    <li><div><strong>Quién</strong>: tú mismo, porque eres mayor de edad (o alguien a quien autorices por escrito).</div></li>
+    <li><div><strong>Cómo</strong>: por escrito, en persona o por vía electrónica, identificándote. En los centros públicos andaluces hay un formulario en <a href="https://juntadeandalucia.es/protecciondedatos.html">juntadeandalucia.es/protecciondedatos</a>.</div></li>
+    <li><div><strong>Plazo</strong>: deben responderte por escrito en <strong>un mes</strong>. Si es complejo, pueden ampliarlo dos meses más, avisándote dentro del primer mes.</div></li>
+    <li><div><strong>Si no responden o no estás de acuerdo</strong>, puedes reclamar ante la autoridad de control: el <strong>CTPDA</strong> si es un centro o un organismo público andaluz, y la <strong>AEPD</strong> si es un centro privado, una empresa o un particular.</div></li>
+  </ol>
+
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>Lucía, alumna de 1.º de DAM, autorizó a principio de curso que el centro publicara fotos suyas en su web. En marzo cambia de opinión porque una foto de una actividad se está compartiendo fuera de contexto.</p>
+    <p><strong>Qué puede hacer</strong>: retirar su consentimiento y pedir la supresión de la foto. El centro debe retirarla y actualizar su lista de autorizaciones, sin que Lucía tenga que dar explicaciones.</p>
+  </div>
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>La madre de Álex, alumno de 2.º de DAM de 20 años, llama al centro para preguntar por sus faltas y sus notas.</p>
+    <p><strong>Qué debe hacer el centro</strong>: Álex es mayor de edad, así que sus padres no tienen acceso automático a su información. Con carácter general, el centro necesita el consentimiento de Álex. La AEPD admite matices, por ejemplo cuando los padres pagan los estudios y tienen un interés legítimo en conocer el rendimiento.</p>
+  </div>
+
+  <div class="box ojo">
+    <p class="tag">Si circula un vídeo tuyo sexual o violento</p>
+    <p>La AEPD tiene un <a href="https://www.aepd.es/canalprioritario">Canal prioritario</a> para pedir la retirada urgente de fotos o vídeos sexuales o violentos difundidos sin permiso. Funciona en horas, no en meses. También puedes llamar a la línea gratuita de ayuda en ciberseguridad de INCIBE, el <strong>017</strong>.</p>
+  </div>
+
+  <div class="decide" data-decide="m3">
+    <h3>Actividad: ¿qué derecho usarías?</h3>
+    <p class="hint">Elige el derecho adecuado para cada situación.</p>
+  </div>
+
+  <div class="quiz" data-quiz="m3"><h2>Test del módulo 3</h2></div>
+  <div class="pager"></div>
+</section>
+
+<!-- ================= M4 ================= -->
+<section class="module" id="m4" data-title="Datos en el centro educativo" data-n="4">
+  <div class="eyebrow">Módulo 4 · Tratamiento de datos en los centros docentes</div>
+  <h1>Tus datos (y los de los demás) en el centro</h1>
+  <p class="lead">Fotos de actividades, plataformas, cuentas institucionales, grupos de WhatsApp, cámaras de seguridad e inteligencia artificial. Qué hace el centro con tus datos y qué se espera de ti.</p>
+
+  <h2>Imágenes y vídeos del alumnado</h2>
+  <p>El centro no puede publicar tu imagen en su web o redes sin tu consentimiento (en el caso de alumnado menor de 14 años, el de su familia). Suele pedirse a principio de curso, con casillas separadas para cada uso. Si alguien no lo autoriza, el centro debe evitar que aparezca reconocible.</p>
+  <p>Las fotos con fines estrictamente educativos (por ejemplo, grabar una práctica para evaluarla) se amparan en la función educativa, pero <strong>solo pueden usarse para eso</strong>.</p>
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>El departamento sube al blog del centro una foto de la Semana del Libro. Un alumno aparece claramente y su familia no había dado permiso.</p>
+    <p><strong>Resolución</strong>: se retira la foto, se informa al Delegado de Protección de Datos y se recuerda al profesorado que revise las autorizaciones antes de publicar.</p>
+  </div>
+  <div class="box ej">
+    <p class="tag">¿Y si la foto la publica un compañero?</p>
+    <p>El centro solo responde de lo que publica él. Si un compañero sube a su cuenta una foto en la que sales tú, el responsable es ese compañero, y puedes pedirle que la quite, denunciarla en la red social o reclamar ante la AEPD.</p>
+  </div>
+
+  <h2>Plataformas y cuentas institucionales</h2>
+  <p>El centro usa plataformas autorizadas (en los centros públicos andaluces, Moodle Centros, Google Workspace y Microsoft 365 con cuentas <em>@g.educaand.es</em> o <em>@educaand.es</em>, y Séneca/iPasen). Su uso se basa en la función educativa, no en tu consentimiento, y nunca deben contener datos de salud u otras categorías especiales.</p>
+  <ul>
+    <li>Usa <strong>siempre la cuenta institucional</strong> que te da el centro para entregar trabajos y comunicarte con el profesorado, no tu Gmail personal.</li>
+    <li>Comparte los documentos con <strong>personas concretas</strong>. La opción «cualquier persona con el enlace» puede hacer que un trabajo con tus datos acabe indexado en un buscador.</li>
+    <li>No uses apps «gratis» para trabajos de clase sin que el profesorado lo indique: muchas guardan los datos fuera de la UE sin garantías.</li>
+  </ul>
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>Un profesor pide entregar un trabajo en Drive. Unos alumnos usan su Gmail personal y uno comparte su documento como público; cualquiera podía encontrarlo con un buscador.</p>
+    <p><strong>Resolución</strong>: se recuerda que solo valen las cuentas institucionales y que no se comparten enlaces abiertos. Es una cuestión de seguridad del tratamiento (art. 32 RGPD).</p>
+  </div>
+
+  <h2>WhatsApp, Telegram y grupos de clase</h2>
+  <p>Los grupos de mensajería <strong>no son canales oficiales</strong> del centro. El grupo de clase es vuestro, y lo que se comparte en él es responsabilidad de quien lo envía. Las notas, los partes, los problemas de salud o las fotos de compañeros no deberían circular por ahí.</p>
+  <div class="box ojo">
+    <p class="tag">Ojo</p>
+    <p>«Es un grupo privado» no es excusa. Un grupo de 30 personas no es tu ámbito personal o doméstico: compartir ahí la imagen de alguien sin permiso es difundirla.</p>
+  </div>
+
+  <h2>Cámaras de videovigilancia</h2>
+  <ul>
+    <li>Su finalidad es la seguridad de personas e instalaciones. Se basan en el interés público, no en el consentimiento.</li>
+    <li>Debe haber carteles informativos visibles.</li>
+    <li>Prohibido en aseos, vestuarios y zonas de descanso del personal. En aulas y talleres, solo pueden funcionar <strong>fuera del horario lectivo</strong>.</li>
+    <li>Las grabaciones se borran en un mes como máximo, salvo que muestren un incidente; en ese caso se entregan a la autoridad en 72 horas.</li>
+    <li>Puedes pedir acceso a las imágenes <strong>en las que apareces tú</strong>, siempre que no perjudique a otras personas. No puedes pedir imágenes en las que no sales.</li>
+  </ul>
+
+  <h2>Inteligencia artificial en clase</h2>
+  <p>ChatGPT, Gemini, Copilot y similares guardan lo que escribes y pueden usarlo para mejorar sus modelos. Por eso:</p>
+  <ul>
+    <li>No metas nombres reales, fotos, notas ni datos de compañeros, profesores o clientes.</li>
+    <li>Usa las cuentas institucionales cuando el centro las ofrezca, no tu cuenta personal.</li>
+    <li>Ninguna IA debería ponerte una nota sin que un profesor la revise: el Reglamento de IA considera de alto riesgo los sistemas que evalúan al alumnado, y el art. 22 del RGPD te protege frente a decisiones solo automatizadas.</li>
+    <li>El Reglamento de IA prohíbe los sistemas que deducen las emociones de las personas en centros educativos y lugares de trabajo, salvo por motivos médicos o de seguridad.</li>
+  </ul>
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>Un grupo usa una IA para escribir un relato y pone sus nombres reales, el nombre del instituto y el de una profesora.</p>
+    <p><strong>Resolución</strong>: se les explica que esos datos han salido del control del centro. La alternativa era sencilla: nombres inventados («Alumno A», «la profesora de Lengua»). Es el principio de minimización.</p>
+  </div>
+
+  <h2>Tus proyectos de clase: apps, bases de datos y repositorios</h2>
+  <p>En DAM vas a programar aplicaciones que recogen datos. Aunque sea un ejercicio, si entran datos reales de personas, se aplica la normativa.</p>
+  <ul>
+    <li><strong>Usa datos ficticios</strong> para probar: generadores como Faker, nombres inventados, DNI de prueba. No metas los datos reales de tus compañeros en la base de datos del proyecto.</li>
+    <li>Si tu app necesita que la prueben personas reales, infórmales de qué datos guarda y dónde, y bórralos cuando termine el proyecto.</li>
+    <li><strong>Ojo con los servicios en la nube gratuitos</strong> (bases de datos, autenticación, analítica): muchos almacenan los datos fuera de la UE.</li>
+    <li><strong>Nunca subas a un repositorio público</strong> contraseñas, claves de API, ficheros <code>.env</code> ni volcados de bases de datos. Usa <code>.gitignore</code> y variables de entorno.</li>
+    <li>Si publicas tu proyecto o lo enseñas en tu portfolio, que las capturas no muestren datos de personas reales.</li>
+    <li>Pide solo los permisos que tu app necesita: una app de notas no necesita la ubicación ni los contactos.</li>
+  </ul>
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>Para el proyecto de 2.º, un grupo hace una app de control de asistencia. Para que quede realista, cargan la base de datos con los nombres, fotos y correos de toda la clase y suben el repositorio a GitHub como público, con el volcado SQL incluido.</p>
+    <p><strong>Análisis</strong>: han publicado datos personales de sus compañeros sin su consentimiento. Es una brecha de confidencialidad. Lo correcto era usar datos ficticios y mantener el repositorio privado o sin los datos. Al darse cuenta, deben retirar el volcado, limpiar el historial de Git (no basta con un nuevo commit que lo borre) y avisar al profesorado.</p>
+  </div>
+
+  <h2>Otras producciones: pódcast, vídeos, blogs</h2>
+  <p>Si un trabajo vuestro se publica, que aparezcan solo nombres de pila o seudónimos y nunca datos de contacto. Si salen otras personas, hace falta su permiso. Y citad las fuentes: la propiedad intelectual también cuenta.</p>
+
+  <div class="decide" data-decide="m4">
+    <h3>Actividad: ¿correcto o incorrecto?</h3>
+    <p class="hint">Situaciones habituales en el centro.</p>
+  </div>
+
+  <div class="quiz" data-quiz="m4"><h2>Test del módulo 4</h2></div>
+  <div class="pager"></div>
+</section>
+
+<!-- ================= M5 ================= -->
+<section class="module" id="m5" data-title="Grabar y difundir" data-n="5">
+  <div class="eyebrow">Módulo 5 · Móviles, gafas inteligentes y redes</div>
+  <h1>Grabar y difundir: móviles y gafas inteligentes</h1>
+  <p class="lead">Es el módulo central del curso. Una grabación hecha en segundos y reenviada con un clic puede tener consecuencias en el centro, ante la Agencia de Protección de Datos, en un juzgado civil y, en casos graves, en uno penal.</p>
+
+  <h2>Qué son las gafas inteligentes</h2>
+  <p>Modelos como las Ray-Ban Meta parecen gafas normales, pero llevan cámara, micrófonos y conexión con el móvil. Se puede hacer una foto o grabar vídeo tocando la patilla o con un comando de voz. Llevan un pequeño LED que se enciende al grabar.</p>
+  <div class="box ley">
+    <p class="tag">Lo que dice la AEPD</p>
+    <p>En julio de 2026 la Agencia Española de Protección de Datos publicó recomendaciones de buenas prácticas sobre gafas inteligentes. La idea central es que hay que usarlas <strong>con los mismos criterios que una cámara o un móvil</strong>, y que la responsabilidad es de quien graba. También recuerda que la voz es un dato personal: grabar conversaciones ajenas sin que lo sepan vulnera la normativa.</p>
+  </div>
+  <div class="box ojo">
+    <p class="tag">«Pero tienen una luz que avisa»</p>
+    <p>La luz no es un permiso. No sustituye al consentimiento ni informa de quién graba, para qué o dónde acabará el vídeo. En clase, además, la gente está atendiendo, no mirando la montura de tus gafas.</p>
+  </div>
+
+  <h2>La clave: grabar para ti o difundir</h2>
+  <p>El RGPD no se aplica a las actividades «exclusivamente personales o domésticas» (art. 2.2.c). Una foto de tu familia en casa que no sale de tu móvil queda fuera. Pero esa excepción es muy estrecha:</p>
+  <ul>
+    <li>En cuanto <strong>envías</strong> la grabación a un grupo, la subes a redes o la compartes con personas ajenas a tu círculo íntimo, deja de ser doméstica y se aplica toda la normativa. La AEPD lo ha dicho expresamente para las gafas inteligentes.</li>
+    <li>Aunque no la compartas, en clase y en la empresa mandan además las <strong>normas del centro o de la empresa</strong>. En Andalucía, la Consejería limita el uso recreativo del móvil durante la jornada escolar y los centros recogen las normas en su reglamento de organización y funcionamiento. Las gafas con cámara son, a estos efectos, un dispositivo de grabación como el móvil.</li>
+  </ul>
+
+  <h2>Analicemos una situación típica</h2>
+  <div class="box caso">
+    <p class="tag">Supuesto</p>
+    <p>Una persona lleva gafas inteligentes a clase, graba a varios profesores sin que lo sepan y envía los vídeos a sus compañeros por mensajería. Algunos compañeros los reenvían. Veamos qué normas entran en juego.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Qué pasó</th><th>Qué se incumplió</th></tr></thead>
+    <tbody>
+      <tr><td>Grabó la imagen y la voz de los profesores</td><td>Es un tratamiento de datos personales (art. 4 RGPD) y de la propia imagen (LO 1/1982).</td></tr>
+      <tr><td>Sin pedir permiso</td><td>No hay base jurídica (art. 6 RGPD): ni consentimiento ni ningún otro motivo legal.</td></tr>
+      <tr><td>Sin que lo supieran</td><td>Falta de transparencia y lealtad (art. 5.1.a RGPD). El LED no informa.</td></tr>
+      <tr><td>En horario de clase</td><td>Normas de convivencia y de uso de dispositivos del centro.</td></tr>
+      <tr><td>Lo envió a sus compañeros</td><td>La difusión rompe la excepción doméstica. Es comunicar datos a terceros sin legitimación.</td></tr>
+      <tr><td>Otros lo reenviaron</td><td>Cada reenvío es un nuevo tratamiento ilícito, responsabilidad de quien reenvía.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Las cuatro vías de consecuencias</h3>
+  <div class="grid2">
+    <div class="card"><h4>1. Disciplinaria</h4><p>El centro aplica sus normas de convivencia. Puede considerarse conducta gravemente perjudicial y llevar a medidas como la suspensión del derecho de asistencia.</p></div>
+    <div class="card"><h4>2. Administrativa</h4><p>Los afectados pueden reclamar ante la AEPD, que multa también a particulares. Hay multas de 2.000 € por grabar a un policía y difundirlo por WhatsApp, y de 6.000 € a 10.000 € por difundir vídeos de terceros en redes.</p></div>
+    <div class="card"><h4>3. Civil</h4><p>Por la Ley Orgánica 1/1982, la persona grabada puede pedir ante un juez que se retire el contenido y una indemnización por daños morales.</p></div>
+    <div class="card"><h4>4. Penal</h4><p>Si la grabación afecta gravemente a la intimidad (por ejemplo, imágenes íntimas o en lugares privados) o sirve para humillar o acosar, puede ser delito. También para quien la reenvía sabiendo su origen.</p></div>
+  </div>
+  <div class="box ojo">
+    <p class="tag">Sois mayores de edad</p>
+    <p>Ninguna de estas consecuencias se suaviza por ser estudiante. A partir de los 18 años se responde con el Código Penal de adultos, no con la Ley del Menor, y las multas y las indemnizaciones las pagas tú, no tu familia. Y «no sabía que estaba prohibido» no sirve como defensa.</p>
+  </div>
+
+  <h2>Si la persona grabada es menor de edad</h2>
+  <p>En el centro hay alumnado de ESO y Bachillerato. Si grabas o difundes la imagen de un menor, entra en juego también la <strong>Ley Orgánica 1/1996 de Protección Jurídica del Menor</strong>:</p>
+  <ul>
+    <li>Difundir la imagen o el nombre de un menor de forma que perjudique su reputación o sea contraria a sus intereses es una intromisión ilegítima <strong>aunque el propio menor o sus padres lo hayan consentido</strong> (art. 4.3).</li>
+    <li>El <strong>Ministerio Fiscal</strong> puede actuar de oficio, sin necesidad de que la familia denuncie.</li>
+    <li>Varios delitos contra la intimidad tienen penas agravadas cuando la víctima es menor de edad.</li>
+    <li>Cualquier contenido sexual en el que aparezca un menor es delito grave, también si solo lo guardas o lo reenvías.</li>
+  </ul>
+  <div class="box ej">
+    <p class="tag">Ejemplo</p>
+    <p>Grabas en el pasillo a un grupo de 3.º de ESO haciendo el tonto y lo subes a tus stories «porque tiene gracia». Aunque a ellos les parezca bien, tú eres un adulto difundiendo la imagen de menores sin el consentimiento de sus padres (si tienen menos de 14) y en un contexto que puede perjudicarles. No lo hagas.</p>
+  </div>
+
+  <div class="box ley">
+    <p class="tag">Antecedente real</p>
+    <p>En 2018 la AEPD multó con 2.000 € a un particular que grabó desde su casa a un policía local que trabajaba en la calle y difundió el vídeo por WhatsApp. Que el afectado fuera un empleado público trabajando no cambió nada: sigue siendo titular de su derecho a la protección de datos. Es exactamente la situación de un profesor en clase.</p>
+  </div>
+
+  <h2>¿Y si tengo un buen motivo para grabar?</h2>
+  <ul>
+    <li><strong>Para estudiar</strong>: pide permiso al profesor antes. Si te lo da, úsalo solo para estudiar y no lo compartas.</li>
+    <li><strong>Para tener pruebas</strong> de una agresión o un acoso: la prueba se entrega a la dirección, a la familia o a la policía. No se sube a redes ni se pasa al grupo. Difundirla revictimiza a quien la sufre.</li>
+    <li><strong>Una conversación en la que tú participas</strong>: grabarla no vulnera el secreto de las comunicaciones, pero difundirla sí puede vulnerar la intimidad o la protección de datos de la otra persona. Y en clase sigue habiendo normas del centro.</li>
+  </ul>
+
+  <h2>Qué hacer si…</h2>
+  <div class="grid2">
+    <div class="card"><h4>…recibes un vídeo de alguien grabado sin permiso</h4><ol><li>No lo reenvíes.</li><li>Bórralo.</li><li>Díselo al tutor o a un adulto de confianza.</li><li>Si es sexual o violento, se puede pedir su retirada por el Canal prioritario de la AEPD.</li></ol></div>
+    <div class="card"><h4>…descubres que te han grabado a ti</h4><ol><li>Pide a quien lo grabó que lo borre.</li><li>Haz capturas de dónde se ha difundido (sin reenviarlo).</li><li>Avisa al centro.</li><li>Puedes reclamar ante la AEPD o, si es urgente, usar el Canal prioritario.</li></ol></div>
+  </div>
+
+  <div class="decide" data-decide="m5">
+    <h3>Actividad: el semáforo de las grabaciones</h3>
+    <p class="hint">Verde: se puede. Ámbar: solo con permiso o con condiciones. Rojo: no.</p>
+  </div>
+
+  <div class="quiz" data-quiz="m5"><h2>Test del módulo 5</h2></div>
+  <div class="pager"></div>
+</section>
+
+<!-- ================= M6 ================= -->
+<section class="module" id="m6" data-title="Brechas de seguridad" data-n="6">
+  <div class="eyebrow">Módulo 6 · Brechas de seguridad</div>
+  <h1>Brechas de seguridad: cuando un dato se escapa</h1>
+  <p class="lead">Una brecha no es solo un ataque de hackers. La mayoría son despistes: un correo al destinatario equivocado, un pendrive perdido, una pantalla sin bloquear. Lo importante es saber reconocerla y avisar enseguida.</p>
+
+  <h2>Qué es una brecha</h2>
+  <p>Cualquier incidente que provoque la <strong>destrucción, pérdida, alteración, comunicación o acceso no autorizado</strong> a datos personales, sea por accidente o intencionado.</p>
+  <div class="grid2">
+    <div class="card"><h4>Confidencialidad</h4><p>Alguien ve lo que no debía: enviar las notas de todo el grupo con las direcciones en copia visible.</p></div>
+    <div class="card"><h4>Integridad</h4><p>Los datos se modifican sin permiso: alguien cambia una cifra en una hoja compartida.</p></div>
+    <div class="card"><h4>Disponibilidad</h4><p>Los datos se pierden o no se puede acceder: un ransomware cifra los expedientes; se borra una carpeta sin copia.</p></div>
+  </div>
+
+  <h2>Qué hace el responsable (el centro o la empresa)</h2>
+  <ol class="steps">
+    <li><div>Analiza el riesgo para las personas afectadas y consulta a su Delegado de Protección de Datos.</div></li>
+    <li><div>Toma medidas para frenar el daño cuanto antes: retirar, cambiar contraseñas, bloquear accesos.</div></li>
+    <li><div>Si hay riesgo, lo <strong>notifica a la autoridad de control en un máximo de 72 horas</strong> (art. 33 RGPD).</div></li>
+    <li><div>Si el riesgo es alto, <strong>informa también a los afectados</strong> (art. 34 RGPD). No hace falta, por ejemplo, si los datos estaban cifrados.</div></li>
+    <li><div>Lo documenta todo, se haya notificado o no.</div></li>
+  </ol>
+
+  <h2>Y tú, ¿qué tienes que hacer?</h2>
+  <div class="box ojo">
+    <p class="tag">La regla más importante</p>
+    <p><strong>Avisa inmediatamente</strong> a tu profesor, a tu tutor de empresa o a la persona que te indiquen. No lo ocultes ni intentes arreglarlo tú solo. Las 72 horas empiezan a contar cuando la organización se entera; si te callas, el problema crece y la empresa puede incumplir el plazo por tu culpa.</p>
+  </div>
+
+  <h2>Casos habituales</h2>
+  <div class="box caso">
+    <p class="tag">En el centro</p>
+    <p>Una tutora envía las calificaciones del grupo a todas las familias con las direcciones visibles. Se registra como brecha, se informa al DPD, se avisa a las familias afectadas y se forma al profesorado en el uso de la copia oculta (CCO) y del envío cifrado.</p>
+  </div>
+  <div class="box caso">
+    <p class="tag">En las prácticas</p>
+    <p>Carlos, alumno de DAM, se lleva a casa en un pendrive una copia de la base de datos de clientes para avanzar con unas pruebas. Lo pierde en el autobús. Le da vergüenza y espera dos días a ver si aparece.</p>
+    <p><strong>Lo correcto</strong>: no haber sacado la copia sin autorización y, una vez perdida, avisar ese mismo día a su tutor de empresa. La empresa debía valorar si notificar a la AEPD dentro de las 72 horas. Si el pendrive hubiera estado cifrado, el riesgo sería mucho menor.</p>
+  </div>
+  <div class="box caso">
+    <p class="tag">Credenciales en el repositorio</p>
+    <p>Durante las prácticas, una alumna hace <em>commit</em> por error de un fichero de configuración con la contraseña de la base de datos de producción y lo sube a un repositorio compartido con un proveedor externo.</p>
+    <p><strong>Qué hacer</strong>: avisar de inmediato. La empresa debe cambiar esa contraseña (borrar el fichero no basta, porque queda en el historial), revisar los accesos y valorar si alguien entró en la base de datos.</p>
+  </div>
+  <div class="box caso">
+    <p class="tag">Phishing</p>
+    <p>Durante las prácticas recibes un correo: «Su cuenta será bloqueada en 24 h. Verifique su contraseña aquí». Pinchas e introduces tus credenciales.</p>
+    <p><strong>Qué hacer</strong>: avisar de inmediato al tutor o al departamento informático para que cambien la contraseña y revisen accesos. Si alguien entró con tu cuenta, puede haber una brecha.</p>
+  </div>
+
+  <h2>Cómo evitarlas: hábitos básicos</h2>
+  <ul>
+    <li>Contraseñas largas y distintas para cada servicio; activa la verificación en dos pasos.</li>
+    <li>Bloquea la pantalla siempre que te levantes (<kbd>Windows</kbd> + <kbd>L</kbd> en Windows, <kbd>Ctrl</kbd> + <kbd>Cmd</kbd> + <kbd>Q</kbd> en Mac).</li>
+    <li>Usa copia oculta (CCO) cuando escribas a varias personas que no se conocen entre sí.</li>
+    <li>Revisa el destinatario antes de enviar; el autocompletado engaña.</li>
+    <li>Nada de pendrives personales ni de reenviar documentos a tu correo personal.</li>
+    <li>No escribas datos personales en los <em>logs</em> de tus aplicaciones ni contraseñas en el código.</li>
+    <li>Recoge al momento lo que imprimes y usa la trituradora para el papel con datos.</li>
+    <li>Desconfía de correos urgentes que piden contraseñas o pagos.</li>
+  </ul>
+
+  <div class="decide" data-decide="m6">
+    <h3>Actividad: ¿es una brecha?</h3>
+    <p class="hint">Decide si la situación es una brecha de seguridad.</p>
+  </div>
+
+  <div class="quiz" data-quiz="m6"><h2>Test del módulo 6</h2></div>
+  <div class="pager"></div>
+</section>
+
+<!-- ================= M7 ================= -->
+<section class="module" id="m7" data-title="Confidencialidad en la empresa" data-n="7">
+  <div class="eyebrow">Módulo 7 · Formación en empresa</div>
+  <h1>En la empresa: lo que ves, se queda ahí</h1>
+  <p class="lead">Durante la formación en empresa tendrás acceso a información que no es tuya: bases de datos con datos de clientes, código fuente, repositorios, credenciales y documentación interna. Este módulo explica qué puedes hacer y qué no en el día a día de un desarrollador en prácticas.</p>
+
+  <h2>Dos tipos de información que debes proteger</h2>
+  <div class="grid2">
+    <div class="card"><h4>Datos personales</h4><p>De personas físicas: los usuarios de las aplicaciones, los clientes de tus clientes, los trabajadores. Los protegen el RGPD y la LOPDGDD.</p><p class="art">Tablas de usuarios, logs con correos o IP, tickets de soporte, nóminas, fotos de perfil…</p></div>
+    <div class="card"><h4>Información confidencial de la empresa</h4><p>Lo que da valor a la empresa y no es público. Lo protege la Ley 1/2019 de Secretos Empresariales, la de Propiedad Intelectual y lo que diga tu compromiso de confidencialidad.</p><p class="art">Código fuente, arquitectura, claves de API, contraseñas, precios, proyectos de clientes, documentación interna…</p></div>
+  </div>
+  <p>Los datos de una empresa como tal (su CIF o su razón social) no son datos personales, pero pueden ser confidenciales. En la práctica, trátalo <strong>todo</strong> como confidencial salvo que te digan lo contrario.</p>
+
+  <h2>El deber de confidencialidad</h2>
+  <div class="box ley">
+    <p class="tag">Artículo 5 de la LOPDGDD</p>
+    <p>Todas las personas que intervienen en cualquier fase del tratamiento de datos están sujetas al deber de confidencialidad. Esa obligación <strong>se mantiene aunque la relación haya terminado</strong>. Es decir: cuando acaben tus prácticas, sigues sin poder contar lo que viste.</p>
+  </div>
+  <p>Además, como persona autorizada (art. 29 RGPD), solo puedes tratar los datos <strong>siguiendo las instrucciones de la empresa</strong> y para las tareas que te encarguen. Mirar la ficha de un vecino «por curiosidad», aunque tengas acceso, es un tratamiento no autorizado.</p>
+  <div class="box ojo">
+    <p class="tag">Consecuencias</p>
+    <p>Saltarte la confidencialidad puede suponer el fin inmediato de tus prácticas en esa empresa, medidas disciplinarias en tu centro y, en casos graves, responsabilidad civil o penal por revelación de secretos. Además, la empresa puede ser multada por lo que hagas tú.</p>
+  </div>
+
+  <h2>Las 10 reglas de las prácticas</h2>
+  <ol class="steps">
+    <li><div><strong>Lee y firma</strong> el compromiso de confidencialidad (o NDA) y pregunta lo que no entiendas.</div></li>
+    <li><div><strong>Accede solo a lo que necesitas</strong> para tu tarea. Tener permisos en la base de datos no es tener permiso para consultarla entera.</div></li>
+    <li><div><strong>Trabaja con datos de prueba</strong>. Si te dan una copia de producción, que sea anonimizada; nunca la saques a tu portátil personal ni a un pendrive.</div></li>
+    <li><div><strong>El código es de la empresa</strong>: no lo subas a tu GitHub personal, no lo copies para tu portfolio y no te lo lleves al terminar.</div></li>
+    <li><div><strong>Credenciales fuera del código</strong>: ni contraseñas ni claves de API en los <em>commits</em>, en los tickets o en mensajes de chat. Usa el gestor de secretos de la empresa.</div></li>
+    <li><div><strong>No pegues código ni datos en una IA</strong> (ChatGPT, Copilot personal, Gemini…) salvo que la empresa lo autorice y con las herramientas que ella te dé.</div></li>
+    <li><div><strong>Usa solo los medios de la empresa</strong>: su correo, sus equipos, su VPN, su nube. Ni Gmail, ni tu Drive, ni WhatsApp personal con clientes.</div></li>
+    <li><div><strong>Nada de fotos ni grabaciones</strong> de pantallas, pizarras de arquitectura, reuniones o compañeros, ni con el móvil ni con gafas inteligentes. Bloquea la pantalla al levantarte.</div></li>
+    <li><div><strong>No hables de clientes o proyectos</strong> fuera del trabajo ni en redes: nada de «estoy programando la app de [cliente]» en LinkedIn sin permiso.</div></li>
+    <li><div><strong>Si algo sale mal, avisa al momento</strong>: un <em>commit</em> con una clave, un correo mal enviado, un enlace sospechoso, un borrado en producción.</div></li>
+  </ol>
+
+  <h2>La memoria de prácticas, el portfolio y las clases</h2>
+  <p>Puedes y debes contar lo que has aprendido, pero sin datos que identifiquen a nadie ni información confidencial de la empresa.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Mejor no</th><th>Mejor así</th></tr></thead>
+    <tbody>
+      <tr><td>Captura del panel de administración con usuarios reales.</td><td>Captura del entorno de pruebas con datos ficticios, autorizada por el tutor de empresa.</td></tr>
+      <tr><td>Pegar en la memoria fragmentos del código de la empresa.</td><td>Explicar con tus palabras el patrón o la técnica, con un ejemplo escrito por ti.</td></tr>
+      <tr><td>«Desarrollé la app de citas de la Clínica X, que tiene 12.000 pacientes.»</td><td>«Participé en el desarrollo de una app de citas para un cliente del sector sanitario.»</td></tr>
+      <tr><td>Subir a tu GitHub público un fork del proyecto para enseñarlo en entrevistas.</td><td>Hacer un proyecto propio inspirado en lo aprendido, sin código ni datos de la empresa.</td></tr>
+    </tbody>
+  </table></div>
+  <p>En caso de duda, enseña la memoria a tu tutor de empresa antes de entregarla.</p>
+
+  <h2>Situaciones típicas de un desarrollador en prácticas</h2>
+  <div class="grid2">
+    <div class="card"><h4>Bases de datos</h4><p>Te dan acceso a producción para depurar un fallo. Consulta solo los registros necesarios, no exportes tablas y no hagas <code>SELECT *</code> «por curiosidad» sobre la tabla de usuarios.</p></div>
+    <div class="card"><h4>Logs y depuración</h4><p>Los logs suelen contener correos, IP o tokens. No los copies a tu equipo ni los pegues en foros o en una IA para que te ayude.</p></div>
+    <div class="card"><h4>Repositorios</h4><p>Revisa qué incluyes en cada <em>commit</em>. Un <code>.env</code> o un volcado SQL subido por error es una brecha, aunque lo borres en el siguiente.</p></div>
+    <div class="card"><h4>Soporte y tickets</h4><p>Si ves datos de usuarios en un ticket, úsalos solo para resolverlo. No los copies a otras herramientas ni los comentes.</p></div>
+    <div class="card"><h4>Diseño de funcionalidades</h4><p>Si te piden un formulario, pregunta qué campos son realmente necesarios. Aplicar la protección de datos desde el diseño (art. 25 RGPD) también es trabajo del programador.</p></div>
+    <div class="card"><h4>Dispositivos y cuentas</h4><p>No instales software, extensiones o librerías no aprobadas en el equipo de la empresa. No compartas tu usuario ni uses el de otro compañero.</p></div>
+  </div>
+
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>Marta hace sus prácticas en una empresa que mantiene el software de una clínica dental. Depurando un error, ve en la base de datos que la madre de una compañera de clase es paciente. Esa tarde, en el grupo del ciclo, escribe: «Adivinad quién está en la base de datos de la clínica 👀».</p>
+    <p><strong>Análisis</strong>: aunque no dio el nombre, ha revelado un dato de salud (que esa persona es paciente) a un grupo donde muchos pueden deducir quién es. Incumple el deber de confidencialidad y el art. 9 RGPD. La empresa puede terminar sus prácticas, el cliente puede romper el contrato con la empresa y la paciente puede reclamar ante la AEPD.</p>
+  </div>
+  <div class="box caso">
+    <p class="tag">Caso resuelto</p>
+    <p>Iván no consigue resolver un error. Copia en ChatGPT, desde su cuenta personal, la función que falla junto con un trozo del log que incluye correos y teléfonos de usuarios.</p>
+    <p><strong>Análisis</strong>: ha comunicado a un tercero código confidencial y datos personales sin autorización y, probablemente, fuera de la UE. Lo correcto era preguntar al tutor si la empresa tiene una herramienta de IA autorizada y, en cualquier caso, eliminar del fragmento cualquier dato personal o secreto.</p>
+  </div>
+  <div class="decide" data-decide="m7">
+    <h3>Actividad: en mis prácticas, ¿puedo…?</h3>
+    <p class="hint">Puedo / Pregunto antes / No puedo.</p>
+  </div>
+
+  <div class="quiz" data-quiz="m7"><h2>Test del módulo 7</h2></div>
+  <div class="pager"></div>
+</section>
+
+<!-- ================= M8 ================= -->
+<section class="module" id="m8" data-title="Examen final y compromiso" data-n="8">
+  <div class="eyebrow">Módulo 8 · Evaluación final</div>
+  <h1>Examen final y compromiso de confidencialidad</h1>
+  <p class="lead">15 preguntas elegidas al azar de todo el curso. Se aprueba con 12 aciertos. Al terminar verás un resumen con tu nombre y tu nota para enseñárselo a tu profesor.</p>
+
+  <div class="card">
+    <label for="alumno"><strong>Tu nombre y apellidos</strong></label>
+    <div class="row">
+      <input type="text" id="alumno" autocomplete="name" placeholder="Nombre y apellidos">
+      <input type="text" id="grupo" placeholder="Ciclo y grupo (p. ej. 1.º SMR)" aria-label="Ciclo y grupo">
+      <button class="btn" id="startFinal">Empezar el examen</button>
+    </div>
+    <p class="hint" id="finalMsg" style="font-size:.9rem;color:var(--muted)"></p>
+  </div>
+  <div class="quiz" id="finalQuiz" style="display:none"><h2>Examen final</h2></div>
+  <div class="cert" id="cert" aria-live="polite"></div>
+
+  <h2>Compromiso de confidencialidad para la formación en empresa</h2>
+  <p>Este es un modelo orientativo. La empresa o el centro pueden tener el suyo; en ese caso, firma el oficial.</p>
+  <pre class="compromiso" id="compromiso">COMPROMISO DE CONFIDENCIALIDAD DEL ALUMNADO EN FORMACIÓN EN EMPRESA
+
+Yo, ______________________________________, con DNI ____________, alumno/a del ciclo de Desarrollo de Aplicaciones Multiplataforma del centro ______________________________, durante mi periodo de formación en la empresa ______________________________,
+
+ME COMPROMETO A:
+
+1. Guardar secreto sobre todos los datos personales y la información de la empresa a los que tenga acceso, también después de terminar mis prácticas (art. 5 de la Ley Orgánica 3/2018).
+2. Tratar los datos solo siguiendo las instrucciones de la empresa y para las tareas que se me encomienden (art. 29 del RGPD).
+3. No hacer fotografías, grabaciones de vídeo o audio, ni capturas de pantalla de personas, documentos, equipos o instalaciones, con ningún dispositivo (móvil, gafas inteligentes, reloj…), salvo autorización expresa.
+4. No copiar, reenviar ni almacenar información, código fuente o datos de la empresa en dispositivos, cuentas o servicios personales (correo, nube, pendrives, repositorios propios o públicos, mensajería, herramientas de inteligencia artificial).
+5. Trabajar con datos de prueba o anonimizados siempre que sea posible, y no extraer copias de bases de datos ni de registros (logs) sin autorización.
+6. No incluir contraseñas, claves de API u otras credenciales en el código, en los commits ni en mensajes, y usar los gestores de secretos de la empresa.
+7. No publicar en redes sociales contenido relacionado con la empresa, sus clientes o su personal sin autorización.
+8. Usar las contraseñas y accesos de forma personal e intransferible y bloquear mi equipo al ausentarme.
+9. Comunicar de inmediato a mi tutor/a de empresa cualquier pérdida, envío erróneo, acceso indebido o incidente de seguridad.
+10. Elaborar la memoria y los trabajos del centro sin datos que identifiquen a personas ni código o información confidencial de la empresa.
+11. Devolver o destruir, al terminar, toda la documentación, el material y las copias que se me hayan entregado, y no conservar accesos ni credenciales.
+
+Soy mayor de edad y conozco que el incumplimiento puede suponer la finalización de mi periodo de formación en la empresa, medidas disciplinarias en el centro y, en su caso, responsabilidades legales.
+
+En ____________, a ___ de ____________ de 20___
+
+Firma del alumno/a:</pre>
+  <div class="row"><button class="btn ghost" id="copyComp">Copiar el texto</button><span class="toast" id="copyMsg" aria-live="polite"></span></div>
+
+  <h2>Fuentes y enlaces útiles</h2>
+  <ul class="sources">
+    <li><a href="https://www.boe.es/buscar/doc.php?id=DOUE-L-2016-80807">Reglamento (UE) 2016/679 (RGPD)</a></li>
+    <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673">Ley Orgánica 3/2018 (LOPDGDD)</a></li>
+    <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-1982-11196">Ley Orgánica 1/1982 (honor, intimidad y propia imagen)</a></li>
+    <li><a href="https://www.aepd.es/guias/guia-centros-educativos.pdf">AEPD: Guía para centros educativos</a></li>
+    <li><a href="https://www.aepd.es/canalprioritario">AEPD: Canal prioritario</a></li>
+    <li><a href="https://www.ctpdandalucia.es">Consejo de Transparencia y Protección de Datos de Andalucía</a></li>
+    <li><a href="https://juntadeandalucia.es/protecciondedatos.html">Junta de Andalucía: protección de datos y ejercicio de derechos</a></li>
+  </ul>
+  <div class="pager"></div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+"use strict";
+var ORDER=["inicio","m1","m2","m3","m4","m5","m6","m7","m8"];
+var DESC={
+  m1:"Normativa, dato personal, tratamiento, responsable",
+  m2:"Principios, bases jurídicas y consentimiento",
+  m3:"Deber de información y tus derechos",
+  m4:"Imágenes, plataformas, cámaras e IA en el centro",
+  m5:"Móviles, gafas inteligentes y menores",
+  m6:"Qué es una brecha y qué hacer",
+  m7:"Confidencialidad del desarrollador en prácticas",
+  m8:"Examen final y compromiso"
+};
+
+/* ---------- Almacenamiento (solo en este navegador) ---------- */
+var KEY="pd-curso-alumnado-v1", state={quiz:{}};
+try{var raw=localStorage.getItem(KEY); if(raw) state=JSON.parse(raw)||{quiz:{}}; if(!state.quiz) state.quiz={};}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ---------- Actividades de decidir ---------- */
+var SI="Sí", NO="No";
+var DECIDE={
+ m1:{opts:[SI,NO],items:[
+  ["Tu nombre y apellidos en la lista de clase",SI,"Te identifica directamente."],
+  ["Un vídeo en el que no se ve tu cara, pero todos te reconocen por la ropa y por tu sitio en el aula",SI,"Eres identificable de forma indirecta, y eso basta."],
+  ["«El 40 % del grupo aprobó Inglés»",NO,"Es un dato agregado: no permite saber nada de una persona concreta."],
+  ["La dirección IP de tu portátil",SI,"Es un identificador en línea que puede vincularse a ti."],
+  ["Un audio de WhatsApp con la voz de una profesora",SI,"La voz identifica a una persona. La AEPD lo recuerda expresamente a propósito de las gafas inteligentes."],
+  ["El CIF y la razón social de una empresa S.L.",NO,"El RGPD protege a personas físicas, no a empresas. Aun así, puede ser información confidencial."],
+  ["Tu número de expediente junto a tu nota",SI,"Con el expediente se sabe quién eres: es un identificador."]
+ ]},
+ m2:{opts:["Minimización","Finalidad","Transparencia","Confidencialidad","Conservación"],items:[
+  ["Un formulario para apuntarse a una excursión pide el grupo sanguíneo y la religión","Minimización","Para una excursión no hacen falta esos datos (y además son de categoría especial)."],
+  ["Una app recoge el correo para enviar facturas y el equipo de desarrollo lo reutiliza para mandar publicidad de otra empresa","Finalidad","Se recogieron para facturar; usarlos para otra cosa incompatible incumple la limitación de la finalidad."],
+  ["Un alumno graba a una profesora con unas gafas sin que ella lo sepa","Transparencia","La persona no sabe que se están tratando sus datos ni para qué."],
+  ["Un ordenador de recepción se queda desbloqueado con la agenda de pacientes a la vista","Confidencialidad","Cualquiera que pase puede ver los datos: falla la seguridad."],
+  ["Un centro guarda las grabaciones de las cámaras del patio durante dos años sin motivo","Conservación","El máximo general es un mes."]
+ ]},
+ m3:{opts:["Acceso","Rectificación","Supresión","Oposición"],items:[
+  ["Quieres saber qué datos tuyos tiene una academia en la que estuviste","Acceso","Tienes derecho a confirmarlo y a obtener una copia."],
+  ["Tu apellido aparece mal escrito en el listado de la FCT","Rectificación","Es un dato inexacto que debe corregirse."],
+  ["Retiraste tu permiso y quieres que quiten tu foto de la web del centro","Supresión","Al retirar el consentimiento, los datos deben borrarse."],
+  ["Por tu situación personal (por ejemplo, una orden de alejamiento) no quieres que tu imagen aparezca en la plataforma de clase","Oposición","Puedes oponerte por motivos de tu situación personal; el centro debe ponderar y evitar que sufras discriminación."]
+ ]},
+ m4:{opts:["Correcto","Incorrecto"],items:[
+  ["Entregar un trabajo desde la cuenta institucional del centro","Correcto","Es el canal autorizado y está bajo el control del centro."],
+  ["Compartir un documento de clase como «cualquier persona con el enlace»","Incorrecto","Puede acabar visible para cualquiera, incluso en buscadores. Compártelo con personas concretas."],
+  ["Pegar en una IA la redacción de un compañero con su nombre para que la corrija","Incorrecto","Estás comunicando datos de otra persona a un servicio externo sin su permiso."],
+  ["Pedir al centro las imágenes de la cámara del pasillo en las que apareces tú tras sufrir un robo","Correcto","Es tu derecho de acceso, siempre que no perjudique a otras personas."],
+  ["Mandar al grupo de clase la foto del parte de un compañero","Incorrecto","Es difundir datos de un tercero sin legitimación."],
+  ["Rellenar la base de datos del proyecto con datos generados con Faker","Correcto","Los datos ficticios permiten probar sin tratar datos de nadie."],
+  ["Subir a un repositorio público el volcado SQL con los datos reales de la clase","Incorrecto","Es publicar datos personales de tus compañeros. Además, borrarlo en otro commit no lo elimina del historial."]
+ ]},
+ m5:{opts:["Verde","Ámbar","Rojo"],items:[
+  ["Hacerte un selfie con una amiga que está de acuerdo, para tu galería","Verde","Es uso personal y con consentimiento."],
+  ["Grabar con las gafas a un profesor sin que lo sepa, «para reírnos luego»","Rojo","Sin consentimiento, sin transparencia y contra las normas del centro."],
+  ["Grabar la explicación del profesor para repasar, tras pedirle permiso y sin compartirla","Verde","Hay permiso y la finalidad es personal. Si después lo compartes, pasa a rojo."],
+  ["Subir a Instagram un selfie en el que detrás salen compañeros reconocibles","Ámbar","Pide permiso a quienes salen o recorta o difumina sus caras."],
+  ["Reenviar al grupo el vídeo de un compañero que se cae en el pasillo","Rojo","Es difundir la imagen de alguien sin su permiso, y puede humillarle."],
+  ["Grabar una pelea en el patio y subirla a TikTok «como prueba»","Rojo","Una prueba se entrega a la dirección o a la policía, no se publica."],
+  ["Grabar a un grupo de ESO en el pasillo y subirlo a tus stories porque «les parece bien»","Rojo","Son menores y tú eres adulto. La LO 1/1996 considera ilegítima la difusión contraria a sus intereses incluso con su consentimiento."],
+  ["Hacer una foto de la pizarra, sin personas, durante la clase","Ámbar","No hay datos personales, pero el uso del móvil en clase depende de las normas del centro y del permiso del profesor."]
+ ]},
+ m6:{opts:["Es una brecha","No es una brecha"],items:[
+  ["Envías un correo con las notas de 25 alumnos a un destinatario equivocado","Es una brecha","Comunicación no autorizada de datos (confidencialidad)."],
+  ["Un ransomware cifra los ficheros de pacientes y no hay copia","Es una brecha","Pérdida de disponibilidad, y probablemente de confidencialidad."],
+  ["Se va la luz y el programa de citas no funciona durante diez minutos, sin pérdida de datos","No es una brecha","Una interrupción breve sin pérdida ni acceso indebido no suele considerarse brecha, aunque conviene registrarla."],
+  ["Pierdes un pendrive sin cifrar con un listado de clientes","Es una brecha","Pérdida de datos y riesgo de que alguien acceda a ellos."],
+  ["Un compañero de prácticas mira por curiosidad la ficha de su vecino en el sistema","Es una brecha","Es un acceso no autorizado, aunque tenga usuario para entrar."]
+ ]},
+ m7:{opts:["Puedo","Pregunto antes","No puedo"],items:[
+  ["Usar el correo corporativo que me ha dado la empresa para mis tareas","Puedo","Es el medio autorizado."],
+  ["Reenviarme a mi Gmail un documento para terminarlo en casa","No puedo","Sacas información a un medio fuera del control de la empresa."],
+  ["Subir el código del proyecto de la empresa a mi GitHub público para el portfolio","No puedo","El código es de la empresa y puede contener secretos. Haz un proyecto propio para el portfolio."],
+  ["Copiar la base de datos de producción a mi portátil para hacer pruebas","No puedo","Usa el entorno de pruebas con datos anonimizados que te indique la empresa."],
+  ["Usar Copilot o ChatGPT para que me ayude con el código","Pregunto antes","Depende de la política de la empresa y de la herramienta. Nunca con datos personales ni secretos."],
+  ["Añadir una librería de npm o de Maven que he encontrado","Pregunto antes","Las dependencias tienen implicaciones de seguridad y de licencias; suelen requerir aprobación."],
+  ["Hacer una foto a la pantalla para acordarme de un procedimiento","No puedo","La pantalla puede mostrar datos; pide mejor una guía o toma notas sin datos."],
+  ["Contar en clase lo que he aprendido, sin nombres ni datos de clientes","Puedo","Compartir aprendizajes es el objetivo, siempre que no identifiques a nadie."],
+  ["Poner en LinkedIn que estoy desarrollando la app de un cliente concreto","Pregunto antes","El nombre de los clientes y los proyectos puede ser confidencial."],
+  ["Llevar puestas mis gafas inteligentes con cámara en el puesto","No puedo","Son un dispositivo de grabación. Solo si la empresa lo autoriza expresamente para una tarea."],
+  ["Al terminar, quedarme una copia del repositorio para seguir aprendiendo","No puedo","Debes devolver o destruir todo el material y las copias al terminar."]
+ ]}
+};
+
+function renderDecide(el){
+  var d=DECIDE[el.getAttribute("data-decide")]; if(!d) return;
+  var done=0, right=0;
+  var score=document.createElement("div"); score.className="dscore";
+  d.items.forEach(function(it,i){
+    var wrap=document.createElement("div"); wrap.className="ditem";
+    var q=document.createElement("div"); q.className="q"; q.textContent=it[0];
+    var opts=document.createElement("div"); opts.className="dopts"; opts.setAttribute("role","group"); opts.setAttribute("aria-label",it[0]);
+    var fb=document.createElement("div"); fb.className="fb"; fb.setAttribute("aria-live","polite");
+    d.opts.forEach(function(o){
+      var b=document.createElement("button"); b.type="button"; b.className="opt"; b.textContent=o;
+      b.addEventListener("click",function(){
+        var all=opts.querySelectorAll("button");
+        for(var k=0;k<all.length;k++){all[k].disabled=true; if(all[k].textContent===it[1]) all[k].classList.add("right");}
+        var ok=(o===it[1]); if(!ok) b.classList.add("wrong");
+        fb.textContent=(ok?"Correcto. ":"La respuesta es «"+it[1]+"». ")+it[2];
+        fb.className="fb show "+(ok?"good":"badf");
+        done++; if(ok) right++;
+        score.textContent=right+" de "+done+" aciertos"+(done===d.items.length?" · actividad terminada":"");
+      });
+      opts.appendChild(b);
+    });
+    wrap.appendChild(q); wrap.appendChild(opts); wrap.appendChild(fb); el.appendChild(wrap);
+  });
+  el.appendChild(score);
+}
+
+/* ---------- Banco de preguntas ---------- */
+/* [enunciado, [opciones], índice correcto, explicación] */
+var QUIZ={
+ m1:[
+  ["¿Cuál de estos NO es un dato personal?",["La voz de una profesora en un audio","La matrícula del coche de un compañero","La temperatura media de Sevilla en agosto","Un correo del tipo nombre.apellido@empresa.es"],2,"La temperatura no se refiere a ninguna persona. Los demás permiten identificar a alguien."],
+  ["Un vídeo en el que se reconoce la cara de un profesor dando clase…",["Es un dato personal","Solo es dato personal si aparece su nombre","No es dato personal porque es un empleado público trabajando","Solo es dato personal si se graba en alta calidad"],0,"La imagen de una persona identificable es un dato personal, sea o no empleado público."],
+  ["¿Cuál de estos es un dato de categoría especial?",["La nota de Matemáticas","Un informe que indica que un alumno tiene diabetes","El domicilio de un cliente","El número de teléfono de una empresa"],1,"Los datos de salud tienen protección reforzada (art. 9 RGPD)."],
+  ["Reenviar a un grupo de WhatsApp un vídeo en el que sale otra persona…",["No es un tratamiento, solo lo has reenviado","Es un tratamiento de datos personales","Solo es tratamiento si lo has grabado tú","Solo es tratamiento si el grupo tiene más de 50 personas"],1,"Comunicar o difundir datos es un tratamiento (art. 4.2 RGPD), aunque no seas quien grabó."],
+  ["En tus prácticas, la empresa decide para qué y cómo se usan los datos de los usuarios de su propia app. La empresa es…",["Encargada del tratamiento","Responsable del tratamiento","Destinataria","Interesada"],1,"El responsable decide los fines y los medios. Tú tratas los datos como persona autorizada bajo su autoridad."],
+  ["¿Qué ley permite reclamar una indemnización a quien usa tu imagen sin permiso?",["La Ley Orgánica 1/1982 del derecho al honor, la intimidad y la propia imagen","La Ley de Propiedad Horizontal","El Estatuto de los Trabajadores","Ninguna: solo se puede reclamar ante la AEPD"],0,"La LO 1/1982 es la vía civil para proteger tu imagen, compatible con la reclamación ante la AEPD."]
+ ],
+ m2:[
+  ["¿Qué principio dice que solo se recojan los datos imprescindibles?",["Exactitud","Minimización de datos","Responsabilidad proactiva","Limitación del plazo de conservación"],1,"Minimización (art. 5.1.c RGPD): adecuados, pertinentes y limitados a lo necesario."],
+  ["El centro usa las fotos del carné escolar para un anuncio en Instagram sin preguntar. Incumple sobre todo…",["La limitación de la finalidad","La exactitud","La portabilidad","El interés vital"],0,"Las fotos se recogieron para el carné; usarlas para publicidad es una finalidad distinta que necesita consentimiento."],
+  ["En el centro hay alumnos de ESO. ¿A partir de qué edad puede un alumno dar él mismo el consentimiento para el uso de su imagen?",["12 años","14 años","16 años","18 años"],1,"El art. 7 de la LOPDGDD fija los 14 años. Por debajo, consienten sus padres o tutores."],
+  ["Programas el registro de una app. ¿Qué consentimiento sería válido?",["Una casilla que ya venía marcada","No haber dicho nada cuando te avisaron","Marcar tú mismo una casilla concreta tras leer para qué se usarán tus datos","Haber aceptado las normas generales del centro"],2,"Tiene que ser libre, específico, informado e inequívoco: una acción clara tuya."],
+  ["¿Necesita el centro tu consentimiento para registrar tus notas?",["Sí, siempre","No: se basa en la función educativa (interés público) y la obligación legal","Solo si eres mayor de edad","Solo si las notas son malas"],1,"La evaluación forma parte de la función educativa que regula la Ley Orgánica de Educación."],
+  ["¿Puedes retirar un consentimiento que diste?",["No, una vez dado es definitivo","Sí, en cualquier momento, y debe ser tan fácil como darlo","Solo con un abogado","Solo durante el primer mes"],1,"Art. 7.3 RGPD."]
+ ],
+ m3:[
+  ["¿Cuál es el plazo general para responder a una solicitud de derechos?",["10 días","1 mes, ampliable 2 meses más si es complejo","6 meses","No hay plazo"],1,"Art. 12.3 RGPD."],
+  ["Diste permiso para que el centro publicara tu foto y ahora quieres que la quite. Ejerces…",["El derecho de portabilidad","El derecho de supresión, tras retirar tu consentimiento","El derecho de rectificación","Ningún derecho: ya diste permiso"],1,"Al retirar el consentimiento, el responsable debe suprimir los datos."],
+  ["Eres mayor de edad y tu padre llama al centro para conocer tus notas. Con carácter general…",["El centro se las da siempre","El centro necesita tu consentimiento, salvo matices como que tus padres paguen tus estudios","El centro no puede dártelas ni a ti","Solo se las dan si van en persona"],1,"Siendo mayor de edad, tus padres son terceros. La AEPD admite que puedan tener interés legítimo si sufragan tus estudios."],
+  ["Pides al centro la grabación de una cámara en la que no apareces, para ver quién rayó tu moto. El centro…",["Debe dártela","No puede dártela, pero sí entregarla a la policía si la pide","Debe publicarla","Debe dártela si pagas una tasa"],1,"Solo tienes acceso a imágenes en las que apareces. Las Fuerzas de Seguridad y los juzgados sí pueden pedirlas."],
+  ["Si una empresa privada no responde a tu solicitud, ¿ante quién reclamas?",["Ante la Agencia Española de Protección de Datos (AEPD)","Ante el ayuntamiento","Ante la Policía Local","Ante el Defensor del Pueblo"],0,"La AEPD supervisa a empresas y particulares. El CTPDA, al sector público andaluz."],
+  ["Circula un vídeo sexual tuyo sin tu permiso. ¿Qué vía permite pedir su retirada urgente?",["Esperar a que se olvide","El Canal prioritario de la AEPD","Escribir al fabricante del móvil","Ninguna"],1,"El Canal prioritario está pensado para contenidos sexuales o violentos difundidos sin permiso."]
+ ],
+ m4:[
+  ["Para publicar fotos de la graduación en las redes del centro…",["No hace falta nada","Hace falta el consentimiento de los alumnos (o de sus familias si son menores de 14)","Basta con avisar en el tablón","Basta con que lo autorice el tutor"],1,"No es una finalidad estrictamente educativa, así que requiere consentimiento."],
+  ["¿Con qué cuenta debes entregar los trabajos y escribir al profesorado?",["Con la cuenta institucional del centro","Con tu Gmail personal","Con la de un amigo","Da igual"],0,"La cuenta institucional está bajo el control del centro y cuenta con garantías."],
+  ["Las cámaras de videovigilancia dentro de un aula…",["Pueden grabar durante las clases","Solo pueden funcionar fuera del horario lectivo","Están siempre prohibidas","Solo graban en exámenes"],1,"Así se evita la intromisión en la privacidad del alumnado durante las clases."],
+  ["¿Cuánto tiempo pueden guardarse, como regla general, las grabaciones de videovigilancia?",["Una semana","Un mes como máximo","Un año","Indefinidamente"],1,"Salvo que acrediten un incidente; entonces se ponen a disposición de la autoridad."],
+  ["Quieres que una IA revise un trabajo en grupo. ¿Qué es lo correcto?",["Pegarlo con los nombres reales de todos","Quitar o cambiar los nombres y datos personales antes","Añadir también las fotos","Usar la cuenta personal de otra persona"],1,"Minimización: a la IA no le hace falta saber quiénes sois."],
+  ["Para probar la app de tu proyecto final necesitas una base de datos con usuarios. ¿Qué haces?",["Cargo los datos reales de la clase para que sea realista","Genero datos ficticios","Uso los contactos de mi móvil","Descargo una base de datos filtrada de internet"],1,"Los datos ficticios evitan tratar datos de nadie. Las otras opciones son ilícitas."],
+  ["Un grupo de WhatsApp de la clase con 30 personas…",["Es un canal oficial del centro","No es ámbito doméstico: compartir ahí imágenes de otros sin permiso es difundirlas","Está exento de la normativa porque es privado","Solo está regulado si lo crea un profesor"],1,"La excepción doméstica no cubre la difusión a un grupo amplio."]
+ ],
+ m5:[
+  ["Unas gafas inteligentes tienen un LED que se enciende al grabar. ¿Basta eso para grabar a un profesor en clase?",["Sí, la luz ya avisa","No: la luz no es consentimiento ni informa de quién graba y para qué","Sí, si el profesor no protesta","Sí, si la grabación dura menos de un minuto"],1,"La AEPD insiste en que se aplican los mismos criterios que a una cámara o un móvil."],
+  ["Grabas algo solo para ti y después lo envías al grupo de clase. A partir de ese momento…",["Sigue siendo uso personal","Deja de ser uso doméstico y se aplica toda la normativa de protección de datos","Solo es problema de quien lo vea","Solo hay problema si lo subes a YouTube"],1,"La excepción doméstica desaparece al difundir."],
+  ["Recibes un vídeo en el que un compañero es humillado. ¿Qué haces?",["Lo reenvío solo a mis amigos","Lo guardo por si acaso","No lo reenvío, lo borro y aviso a un adulto o al tutor","Lo subo para denunciarlo"],2,"Reenviarlo te convierte en responsable de una nueva difusión."],
+  ["En un caso de grabación y difusión sin permiso, ¿quién puede ser sancionado?",["Solo quien grabó","Quien grabó y también quien reenvió","Solo el centro","Nadie, si dice que no conocía la norma"],1,"Cada difusión es un tratamiento distinto, y la ignorancia de la ley no excusa de su cumplimiento."],
+  ["La AEPD multó con 2.000 € a un particular por grabar a un policía trabajando y difundirlo por WhatsApp. ¿Qué nos enseña?",["Que a los empleados públicos se les puede grabar siempre","Que un empleado público trabajando sigue protegido por la normativa de protección de datos","Que solo está mal grabar a policías","Que WhatsApp es un canal oficial"],1,"Igual que un profesor en clase."],
+  ["¿Qué consecuencias puede tener grabar y difundir a alguien sin permiso?",["Solo un aviso del centro","Disciplinarias, administrativas (AEPD), civiles y, en casos graves, penales","Ninguna si se borra después","Solo multas si eres mayor de edad"],1,"Son vías compatibles entre sí."],
+  ["Grabas a un alumno de 2.º de ESO en el patio y lo difundes; él te dijo que no le importaba. ¿Qué ocurre?",["Nada, tenía su permiso","Puede ser una intromisión ilegítima igualmente: la LO 1/1996 protege al menor incluso con su consentimiento si la difusión es contraria a sus intereses, y la Fiscalía puede actuar","Solo hay problema si tiene menos de 10 años","Solo responde el centro"],1,"Con menores la protección es reforzada, y tú eres adulto."],
+  ["Quieres grabar la clase para repasar. ¿Qué es lo correcto?",["Grabar sin decir nada","Pedir permiso al profesor y, si lo da, usarlo solo para estudiar","Grabar y compartirlo con quien faltó","Grabar con las gafas para que no se note"],1,"Permiso previo y una finalidad limitada."]
+ ],
+ m6:[
+  ["¿Cuál de estas situaciones es una brecha de seguridad?",["Enviar las notas de todo el grupo con las direcciones en copia visible","Cambiar tu contraseña","Hacer una copia de seguridad","Cerrar sesión al terminar"],0,"Es una comunicación no autorizada de datos."],
+  ["Pierdes un pendrive con una copia de la base de datos de clientes. ¿Qué haces?",["Esperar unos días por si aparece","No decir nada para no tener problemas","Avisar inmediatamente al tutor de empresa","Comprar otro pendrive igual"],2,"La empresa necesita saberlo cuanto antes para valorar el riesgo y cumplir el plazo de 72 horas."],
+  ["¿En qué plazo debe el responsable notificar una brecha con riesgo a la autoridad de control?",["24 horas","72 horas","Un mes","No hay plazo"],1,"Art. 33 RGPD."],
+  ["Subes por error a un repositorio un fichero con la contraseña de la base de datos. Borras el fichero en el siguiente commit. ¿Es suficiente?",["Sí, ya no está","No: sigue en el historial. Hay que avisar para que cambien la contraseña y revisen los accesos","Sí, si el repositorio es privado","Sí, si nadie lo ha descargado"],1,"Una credencial expuesta se da por comprometida y hay que rotarla."],
+  ["¿Quién notifica la brecha a la autoridad de control?",["El alumno en prácticas","El responsable del tratamiento (la empresa o el centro)","La policía","El afectado"],1,"Tu obligación es avisar rápido dentro de la organización."],
+  ["¿Qué medida puede evitar que haya que comunicar una brecha a los afectados?",["Que los datos estuvieran cifrados","Borrar el correo enviado","No contárselo a nadie","Cambiar el nombre del archivo"],0,"Si los datos son ininteligibles para terceros, el riesgo baja mucho (art. 34.3 RGPD)."],
+  ["Recibes un correo urgente que te pide tu contraseña para «evitar el bloqueo de la cuenta». ¿Qué es?",["Un aviso normal del servicio técnico","Probablemente phishing: no pinches y avisa","Una oferta de trabajo","Un mensaje del centro"],1,"Ningún servicio legítimo pide tu contraseña por correo."]
+ ],
+ m7:[
+  ["¿Hasta cuándo dura tu deber de confidencialidad?",["Hasta el último día de prácticas","También después de terminar las prácticas","Solo en horario laboral","Hasta que te pongan la nota"],1,"Art. 5 LOPDGDD: se mantiene aunque haya terminado la relación."],
+  ["¿Cómo debe ser la memoria de prácticas?",["Con fragmentos del código de la empresa para que sea más completa","Sin datos que identifiquen a personas ni código o información confidencial, y revisada por el tutor si hay dudas","Con capturas del panel de administración con usuarios reales","Copiando la documentación interna"],1,"Puedes contar lo aprendido sin revelar nada confidencial."],
+  ["Quieres subir una foto de «mi primer día» en tu puesto. ¿Qué es lo correcto?",["Subirla tal cual","Preguntar antes y nunca mostrar pantallas, documentos, compañeros o clientes","Subirla con un filtro","Subirla solo a mejores amigos"],1,"Una pantalla de fondo puede revelar datos personales o confidenciales."],
+  ["Para depurar un error, ¿puedes pegar en ChatGPT, con tu cuenta personal, el código y un trozo del log?",["Sí, si ahorra tiempo","No, salvo que la empresa autorice esa herramienta, y nunca con datos personales ni secretos","Sí, si borras luego la conversación","Sí, si el log es corto"],1,"Sería comunicar código confidencial y datos personales a un tercero sin autorización."],
+  ["Quieres enseñar en entrevistas el proyecto en el que trabajaste en prácticas. ¿Qué es lo correcto?",["Subir el repositorio de la empresa a tu GitHub público","Hacer un proyecto propio con lo aprendido, sin código ni datos de la empresa, o pedir autorización expresa","Guardarte una copia en un pendrive","Hacer capturas con datos reales"],1,"El código y los datos son de la empresa."],
+  ["Un amigo te pide que mires en la base de datos de la empresa si su ex está registrado en la app. ¿Qué haces?",["Lo miro, es mi amigo","No lo miro: solo trato datos para las tareas que me encargan","Lo miro si me promete no decir nada","Solo le digo si está o no, sin más datos"],1,"Tener acceso no es tener permiso (art. 29 RGPD)."],
+  ["Vas a por un café y dejas el ordenador abierto. ¿Qué debías haber hecho?",["Nada, es un momento","Bloquear la pantalla","Apagar el monitor","Pedir a alguien que vigile"],1,"Con Windows + L se bloquea en un segundo."],
+  ["¿Puedes llevar gafas inteligentes con cámara en tu puesto de prácticas?",["Sí, siempre que no grabes","No, salvo autorización expresa de la empresa para una tarea concreta","Sí, si el LED está tapado","Sí, si son graduadas"],1,"Son un dispositivo de grabación. Tapar el LED sería aún peor."]
+ ]
+};
+
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+/* Pinta una lista de preguntas en un contenedor. onDone(aciertos,total) */
+function renderQuestions(container,questions,onDone){
+  var answered=0, right=0;
+  questions.forEach(function(q,i){
+    var wrap=document.createElement("div"); wrap.className="qq";
+    var t=document.createElement("p"); t.className="qt";
+    var n=document.createElement("span"); n.className="qn"; n.textContent=(i+1)+".";
+    t.appendChild(n); t.appendChild(document.createTextNode(q[0]));
+    var opts=document.createElement("div"); opts.className="qopts"; opts.setAttribute("role","group");
+    var fb=document.createElement("div"); fb.className="fb"; fb.setAttribute("aria-live","polite");
+    var order=shuffle(q[1].map(function(_,k){return k;}));
+    order.forEach(function(k){
+      var b=document.createElement("button"); b.type="button"; b.className="qopt"; b.textContent=q[1][k];
+      b.dataset.k=k;
+      b.addEventListener("click",function(){
+        var all=opts.querySelectorAll("button");
+        for(var m=0;m<all.length;m++){all[m].disabled=true; if(+all[m].dataset.k===q[2]) all[m].classList.add("right");}
+        var ok=(k===q[2]); if(!ok) b.classList.add("wrong");
+        fb.textContent=(ok?"Correcto. ":"Incorrecto. ")+q[3];
+        fb.className="fb show "+(ok?"good":"badf");
+        answered++; if(ok) right++;
+        if(answered===questions.length) onDone(right,questions.length);
+      });
+      opts.appendChild(b);
+    });
+    wrap.appendChild(t); wrap.appendChild(opts); wrap.appendChild(fb); container.appendChild(wrap);
+  });
+}
+
+function renderModuleQuiz(el){
+  var id=el.getAttribute("data-quiz");
+  var h=el.querySelector("h2");
+  el.innerHTML=""; el.appendChild(h);
+  var info=document.createElement("p"); info.className="hint";
+  var prev=state.quiz[id];
+  info.textContent="Se supera con un 70 %. "+(prev?("Tu mejor resultado: "+prev.best+" de "+prev.total+"."):"Aún no lo has hecho.");
+  el.appendChild(info);
+  var qs=document.createElement("div"); el.appendChild(qs);
+  var res=document.createElement("div"); res.className="qresult"; res.setAttribute("aria-live","polite");
+  renderQuestions(qs,QUIZ[id],function(r,t){
+    var pass=r/t>=0.7;
+    var p=state.quiz[id]||{best:0,total:t,passed:false};
+    p.best=Math.max(p.best,r); p.total=t; p.passed=p.passed||pass; state.quiz[id]=p; save(); updateProgress();
+    res.innerHTML="";
+    res.appendChild(document.createTextNode((pass?"Test superado: ":"Todavía no: ")+r+" de "+t+" aciertos. "+(pass?"Puedes pasar al siguiente módulo.":"Repasa las explicaciones y vuelve a intentarlo.")));
+    var again=document.createElement("button"); again.className="btn ghost"; again.type="button"; again.textContent="Repetir el test"; again.style.marginLeft="10px";
+    again.addEventListener("click",function(){renderModuleQuiz(el);});
+    res.appendChild(again);
+    res.classList.add("show");
+  });
+  el.appendChild(res);
+}
+
+/* ---------- Examen final ---------- */
+function startFinal(){
+  var name=document.getElementById("alumno").value.trim();
+  var msg=document.getElementById("finalMsg");
+  if(!name){msg.textContent="Escribe tu nombre para que aparezca en el resumen de resultados."; document.getElementById("alumno").focus(); return;}
+  msg.textContent="";
+  var pool=[]; Object.keys(QUIZ).forEach(function(k){QUIZ[k].forEach(function(q){pool.push(q);});});
+  var qs=shuffle(pool.slice()).slice(0,15);
+  var box=document.getElementById("finalQuiz"); box.style.display="block";
+  box.innerHTML="<h2>Examen final</h2>";
+  var cert=document.getElementById("cert"); cert.className="cert"; cert.innerHTML="";
+  var holder=document.createElement("div"); box.appendChild(holder);
+  renderQuestions(holder,qs,function(r,t){
+    var pass=r>=12;
+    state.final={name:name,best:Math.max((state.final&&state.final.best)||0,r),passed:(state.final&&state.final.passed)||pass}; save(); updateProgress();
+    var grupo=document.getElementById("grupo").value.trim();
+    var d=new Date();
+    var fecha=d.toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})+", "+d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
+    cert.innerHTML="";
+    var e=document.createElement("div"); e.className="eyebrow"; e.textContent="Resumen de resultados";
+    var h=document.createElement("h3"); h.textContent=name;
+    var g=document.createElement("p"); g.textContent=(grupo?grupo+" · ":"")+fecha;
+    var big=document.createElement("div"); big.className="big"; big.textContent=r+" / "+t;
+    var s=document.createElement("p"); s.style.fontWeight="700"; s.style.color=pass?"var(--ok)":"var(--bad)";
+    s.textContent=pass?"Examen superado. Has completado el curso de protección de datos en el aula y en la empresa.":"No superado. Se necesitan 12 aciertos. Repasa los módulos y vuelve a intentarlo.";
+    var tests=document.createElement("p"); tests.style.fontSize=".9rem"; tests.style.color="var(--muted)";
+    var n=0; Object.keys(QUIZ).forEach(function(k){if(state.quiz[k]&&state.quiz[k].passed) n++;});
+    tests.textContent="Tests de módulo superados: "+n+" de 7. Haz una captura de pantalla de este resumen para entregarla.";
+    var again=document.createElement("button"); again.className="btn ghost"; again.type="button"; again.textContent="Hacer otro examen";
+    again.addEventListener("click",startFinal);
+    [e,h,g,big,s,tests,again].forEach(function(x){cert.appendChild(x);});
+    cert.classList.add("show");
+    cert.scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ---------- Navegación ---------- */
+var nav=document.getElementById("navlist"), cards=document.getElementById("modcards");
+ORDER.forEach(function(id){
+  var sec=document.getElementById(id), n=sec.getAttribute("data-n")||"·";
+  var li=document.createElement("li"), a=document.createElement("a");
+  a.href="#"+id; a.dataset.id=id;
+  a.innerHTML='<span class="num"></span><span class="lbl"></span><span class="tick" aria-hidden="true"></span>';
+  a.querySelector(".num").textContent=n; a.querySelector(".lbl").textContent=sec.getAttribute("data-title");
+  li.appendChild(a); nav.appendChild(li);
+  if(id!=="inicio"){
+    var c=document.createElement("a"); c.href="#"+id; c.dataset.id=id;
+    c.innerHTML='<span class="n"></span><span class="t"></span><span class="d"></span><span class="st"></span>';
+    c.querySelector(".n").textContent=n; c.querySelector(".t").textContent=sec.getAttribute("data-title"); c.querySelector(".d").textContent=DESC[id];
+    cards.appendChild(c);
+  }
+  var pager=sec.querySelector(".pager");
+  if(pager){
+    var i=ORDER.indexOf(id);
+    var p=document.createElement("a"); p.href="#"+ORDER[i-1]; p.textContent="← "+document.getElementById(ORDER[i-1]).getAttribute("data-title"); pager.appendChild(p);
+    if(i<ORDER.length-1){var nx=document.createElement("a"); nx.href="#"+ORDER[i+1]; nx.textContent=document.getElementById(ORDER[i+1]).getAttribute("data-title")+" →"; pager.appendChild(nx);}
+  }
+});
+
+function updateProgress(){
+  var n=0;
+  Object.keys(QUIZ).forEach(function(k){if(state.quiz[k]&&state.quiz[k].passed) n++;});
+  document.getElementById("progtxt").textContent=n+" de 7 tests superados"+(state.final&&state.final.passed?" · examen final aprobado":"");
+  document.getElementById("progbar").style.width=(n/7*100)+"%";
+  document.querySelectorAll("[data-id]").forEach(function(a){
+    var id=a.dataset.id, ok=(state.quiz[id]&&state.quiz[id].passed)||(id==="m8"&&state.final&&state.final.passed);
+    var t=a.querySelector(".tick"); if(t) t.textContent=ok?"✓":"";
+    var st=a.querySelector(".st"); if(st) st.textContent=ok?"Superado ✓":"";
+  });
+}
+
+function show(){
+  var id=(location.hash||"").slice(1); if(ORDER.indexOf(id)<0) id="inicio";
+  ORDER.forEach(function(x){document.getElementById(x).classList.toggle("show",x===id);});
+  nav.querySelectorAll("a").forEach(function(a){a.classList.toggle("active",a.dataset.id===id); if(a.dataset.id===id) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");});
+  document.title=(id==="inicio"?"":document.getElementById(id).getAttribute("data-title")+" · ")+"Protección de datos: aula y empresa";
+  window.scrollTo(0,0);
+  document.getElementById("side").classList.add("closed");
+  document.getElementById("menuBtn").setAttribute("aria-expanded","false");
+}
+window.addEventListener("hashchange",show);
+document.getElementById("menuBtn").addEventListener("click",function(){
+  var s=document.getElementById("side"), closed=s.classList.toggle("closed");
+  this.setAttribute("aria-expanded",String(!closed)); this.textContent=closed?"Ver módulos":"Ocultar módulos";
+});
+
+document.querySelectorAll("[data-decide]").forEach(renderDecide);
+document.querySelectorAll("[data-quiz]").forEach(renderModuleQuiz);
+document.getElementById("startFinal").addEventListener("click",startFinal);
+if(state.final&&state.final.name) document.getElementById("alumno").value=state.final.name;
+
+document.getElementById("copyComp").addEventListener("click",function(){
+  var txt=document.getElementById("compromiso").textContent, m=document.getElementById("copyMsg");
+  try{
+    navigator.clipboard.writeText(txt).then(function(){m.textContent="Texto copiado.";},function(){m.textContent="No se pudo copiar: selecciona el texto y cópialo a mano.";});
+  }catch(e){m.textContent="No se pudo copiar: selecciona el texto y cópialo a mano.";}
+});
+
+updateProgress(); show();
+})();
+</script>
+</body>
+</html>
